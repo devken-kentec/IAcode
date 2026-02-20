@@ -15,20 +15,27 @@
         }
     </style>
 </head>
-<body onload="telaInteira()">
+<body onload="entrarTelaCheia()">
     <canvas id="matrix"></canvas>
     <script>
-		function telaInteira(){
-			const elem = documentElement;
-			elem.requestFullScreen();
-		}
+        function entrarTelaCheia() {
+            const elemento = document.documentElement; // ou qualquer elemento específico
+            
+            if (elemento.requestFullscreen) {
+                elemento.requestFullscreen();
+            } else if (elemento.webkitRequestFullscreen) { // Safari
+                elemento.webkitRequestFullscreen();
+            } else if (elemento.msRequestFullscreen) { // IE/Edge antigo
+                elemento.msRequestFullscreen();
+            }
+        }
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVXYWZabcdefghijklmnopqrstuvxywz123456789';     
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVXYWZabcdefghijklmnopqrstuvxywz123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';     
         const fontSize = 18;
         const columns = canvas.width / fontSize;
 
