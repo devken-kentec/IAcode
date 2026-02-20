@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Minha página de teste</title>
+  </head>
+  <body>
+    <div>Testando Localização</div>
+        <form>
+            <button type="button" onClick="buscarLocalizacao()">Click Me!</button>
+				<pre>
+					<div id="lat"></div>
+					<div id="lon"></div>
+					<div id="pre"></div>
+				</pre>
+                <input type="text" name="loc" id="loc"/>
+                <button type="button" onClick="mostrar()">Colar</button>
+                <a href="#" target="_blank" id="mos">Aqui</a>
+        </form>
+    <script>
+        function mostrar(){
+            var localiza = document.getElementById('loc').value;
+            document.getElementById('mos').href = localiza;
+
+        }
+
+        function buscarLocalizacao() {
+            // 1. Verifica se o navegador suporta geolocalização
+            if (!navigator.geolocation) {
+                console.error("Geolocalização não é suportada pelo seu navegador.");
+                return;
+            }
+
+            // 2. Configurações para maior precisão
+            const opcoes = {
+                enableHighAccuracy: true, // Força o uso de GPS se disponível
+                timeout: 5000,          // Tempo máximo de espera (5 segundos)
+                maximumAge: 0           // Não utiliza posições em cache
+            };
+
+            // 3. Função de sucesso
+            function sucesso(posicao) {
+                const latitude = posicao.coords.latitude;
+                const longitude = posicao.coords.longitude;
+                const precisao = posicao.coords.accuracy;
+				
+				document.getElementById('lat').innerHTML = latitude;
+				document.getElementById('lon').innerHTML = longitude;
+				document.getElementById('pre').innerHTML = precisao;
+
+                console.log(`Latitude: ${latitude}`);
+                console.log(`Longitude: ${longitude}`);
+                console.log(`Precisão: ${precisao} metros`);
+            }
+
+            // 4. Função de erro
+            function erro(err) {
+                console.warn(`Erro (${err.code}): ${err.message}`);
+            }
+
+            // 5. Chamada do método
+            navigator.geolocation.getCurrentPosition(sucesso, erro, opcoes);
+        }
+    </script>
+  </body>
+</html>

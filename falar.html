@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texto para Fala</title>
+</head>
+<body>
+    <h1>Texto para Fala</h1>
+    <textarea id="texto" rows="5" cols="30" placeholder="Digite algo aqui..."></textarea>
+    <br>
+    <button onclick="falar()">Falar</button>
+
+    <script>
+        function falar() {
+            const texto = document.getElementById('texto').value;
+            const sintese = new SpeechSynthesisUtterance(texto);
+            sintese.lang = 'pt-BR'; // Define o idioma para português do Brasil
+            window.speechSynthesis.speak(sintese);
+        }
+    </script>
+</body>
+</html>

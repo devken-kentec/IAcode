@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Imagem - Câmera do Celular</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .camera-section {
+            margin-bottom: 30px;
+        }
+        
+        .camera-container {
+            width: 100%;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #video {
+            width: 100%;
+            display: none;
+        }
+        
+        #canvas {
+            width: 100%;
+            display: none;
+        }
+        
+        .placeholder {
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .placeholder i {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(37, 117, 252, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(37, 117, 252, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .secondary-btn {
+            background: linear-gradient(to right, #8e9eab, #eef2f3);
+            color: #333;
+        }
+        
+        .captured-image {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .captured-image h3 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        #capturedImageContainer {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #capturedImage {
+            width: 100%;
+            display: block;
+        }
+        
+        .save-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .save-section h3 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .save-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .info-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #2575fc;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 25px;
+            font-size: 0.9rem;
+        }
+        
+        .info-box h4 {
+            color: #2575fc;
+            margin-bottom: 8px;
+        }
+        
+        .instructions {
+            margin-top: 25px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .instructions h3 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            header {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-camera"></i> Captura de Imagem</h1>
+            <p class="subtitle">Acesse a câmera do seu dispositivo e salve as fotos</p>
+        </header>
+        
+        <div class="content">
+            <div class="camera-section">
+                <h2><i class="fas fa-video"></i> Câmera</h2>
+                <div class="camera-container">
+                    <div class="placeholder" id="cameraPlaceholder">
+                        <i class="fas fa-camera"></i>
+                        <p>A câmera será ativada quando você clicar em "Iniciar Câmera"</p>
+                    </div>
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="startCamera" onclick="startCamera()">
+                        <i class="fas fa-play"></i> Iniciar Câmera
+                    </button>
+                    <button id="captureBtn" onclick="captureImage()" disabled>
+                        <i class="fas fa-camera"></i> Capturar Imagem
+                    </button>
+                    <button id="stopCamera" onclick="stopCamera()" disabled class="secondary-btn">
+                        <i class="fas fa-stop"></i> Parar Câmera
+                    </button>
+                </div>
+            </div>
+            
+            <div class="captured-image" id="capturedSection" style="display: none;">
+                <h3><i class="fas fa-image"></i> Imagem Capturada</h3>
+                <div id="capturedImageContainer">
+                    <img id="capturedImage" src="" alt="Imagem capturada">
+                </div>
+            </div>
+            
+            <div class="save-section">
+                <h3><i class="fas fa-save"></i> Salvar Imagem</h3>
+                <p>Clique no botão abaixo para salvar a imagem capturada no seu dispositivo.</p>
+                
+                <div class="save-options">
+                    <button id="saveImage" onclick="saveImage()" disabled class="secondary-btn">
+                        <i class="fas fa-download"></i> Salvar no Dispositivo
+                    </button>
+                    <button id="shareImage" onclick="shareImage()" disabled class="secondary-btn">
+                        <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Importante</h4>
+                <p>Por questões de segurança, os navegadores não permitem que JavaScript salve arquivos diretamente em pastas do sistema. Esta aplicação permite que você salve a imagem na galeria ou pasta de downloads do seu dispositivo usando as funcionalidades do navegador.</p>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-list-ol"></i> Como usar:</h3>
+                <ol>
+                    <li>Clique em <strong>"Iniciar Câmera"</strong> para ativar a câmera do seu dispositivo</li>
+                    <li>Quando a câmera estiver ativa, clique em <strong>"Capturar Imagem"</strong> para tirar uma foto</li>
+                    <li>A imagem capturada será exibida na tela</li>
+                    <li>Clique em <strong>"Salvar no Dispositivo"</strong> para baixar a imagem para seu celular</li>
+                    <li>Você também pode compartilhar a imagem usando o botão <strong>"Compartilhar"</strong></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Captura de Imagem &copy; 2023 - Funciona em dispositivos Android, iOS e computadores</p>
+    </footer>
+
+    <script>
+        // Elementos do DOM
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('captureBtn');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        const saveImageBtn = document.getElementById('saveImage');
+        const shareImageBtn = document.getElementById('shareImage');
+        const capturedSection = document.getElementById('capturedSection');
+        
+        let stream = null;
+        let capturedImageData = null;
+        
+        // Iniciar a câmera
+        async function startCamera() {
+            try {
+                // Solicitar acesso à câmera
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment', // Preferir câmera traseira
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }, 
+                    audio: false 
+                });
+                
+                // Exibir o vídeo no elemento video
+                video.srcObject = stream;
+                video.style.display = 'block';
+                cameraPlaceholder.style.display = 'none';
+                
+                // Ativar/desativar botões
+                startCameraBtn.disabled = true;
+                captureBtn.disabled = false;
+                stopCameraBtn.disabled = false;
+                
+                console.log("Câmera iniciada com sucesso!");
+            } catch (err) {
+                console.error("Erro ao acessar a câmera: ", err);
+                alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+            }
+        }
+        
+        // Capturar imagem da câmera
+        function captureImage() {
+            if (!stream) {
+                alert("A câmera não está ativa. Inicie a câmera primeiro.");
+                return;
+            }
+            
+            // Ajustar o canvas para o tamanho do vídeo
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Desenhar o frame atual do vídeo no canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Obter a imagem como URL de dados
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
+            
+            // Exibir a imagem capturada
+            capturedImage.src = capturedImageData;
+            capturedSection.style.display = 'block';
+            
+            // Ativar botões de salvar e compartilhar
+            saveImageBtn.disabled = false;
+            shareImageBtn.disabled = false;
+            
+            // Rolar a página para mostrar a imagem capturada
+            capturedSection.scrollIntoView({ behavior: 'smooth' });
+            
+            console.log("Imagem capturada com sucesso!");
+        }
+        
+        // Parar a câmera
+        function stopCamera() {
+            if (stream) {
+                // Parar todas as trilhas de mídia
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                
+                // Ocultar o vídeo e mostrar o placeholder
+                video.style.display = 'none';
+                cameraPlaceholder.style.display = 'block';
+                
+                // Ativar/desativar botões
+                startCameraBtn.disabled = false;
+                captureBtn.disabled = true;
+                stopCameraBtn.disabled = true;
+                
+                console.log("Câmera parada.");
+            }
+        }
+        
+        // Salvar a imagem no dispositivo
+        function saveImage() {
+            if (!capturedImageData) {
+                alert("Nenhuma imagem foi capturada ainda.");
+                return;
+            }
+            
+            try {
+                // Criar um link de download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = capturedImageData;
+                
+                // Criar um nome de arquivo com timestamp
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                downloadLink.download = `foto-capturada-${timestamp}.jpg`;
+                
+                // Adicionar ao documento, clicar e remover
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                console.log("Imagem salva com sucesso!");
+                alert("Imagem salva com sucesso! Verifique sua pasta de downloads.");
+            } catch (err) {
+                console.error("Erro ao salvar a imagem: ", err);
+                alert("Erro ao salvar a imagem. Tente novamente.");
+            }
+        }
+        
+        // Compartilhar a imagem (usando Web Share API se disponível)
+        async function shareImage() {
+            if (!capturedImageData) {
+                alert("Nenhuma imagem foi capturada ainda.");
+                return;
+            }
+            
+            // Verificar se a Web Share API está disponível
+            if (navigator.share) {
+                try {
+                    // Converter dataURL para blob
+                    const blob = await (await fetch(capturedImageData)).blob();
+                    const file = new File([blob], 'foto-capturada.jpg', { type: 'image/jpeg' });
+                    
+                    // Compartilhar o arquivo
+                    await navigator.share({
+                        files: [file],
+                        title: 'Foto Capturada',
+                        text: 'Foto capturada usando a aplicação de câmera'
+                    });
+                    
+                    console.log("Imagem compartilhada com sucesso!");
+                } catch (err) {
+                    console.error("Erro ao compartilhar: ", err);
+                    // Fallback para download se o compartilhamento falhar
+                    if (err.name !== 'AbortError') {
+                        saveImage();
+                    }
+                }
+            } else {
+                // Fallback para download se a API de compartilhamento não estiver disponível
+                alert("A funcionalidade de compartilhamento não está disponível no seu navegador. A imagem será baixada.");
+                saveImage();
+            }
+        }
+        
+        // Verificar se a API de mídia está disponível
+        window.addEventListener('load', function() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Seu navegador não suporta acesso à câmera. Tente usar um navegador mais recente como Chrome ou Firefox.");
+                startCameraBtn.disabled = true;
+                startCameraBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Navegador não compatível';
+            }
+        });
+    </script>
+</body>
+</html>

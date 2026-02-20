@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR com Tesseract.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            text-align: left;
+        }
+        #imageUpload {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Identificar palavras em imagens (OCR)</h1>
+    <p>Faça upload de uma imagem para extrair o texto:</p>
+    
+    <input type="file" id="imageUpload" accept="image/*" />
+    <div id="progress"></div>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const resultDiv = document.getElementById('result');
+            const progressDiv = document.getElementById('progress');
+
+            resultDiv.innerHTML = "Processando...";
+            progressDiv.innerHTML = "";
+
+            Tesseract.recognize(
+                file,
+                'por', // Idioma (português: 'por', inglês: 'eng')
+                {
+                    logger: m => {
+                        if (m.status) progressDiv.innerHTML = `Status: ${m.status}`;
+                    }
+                }
+            ).then(({ data: { text } }) => {
+                resultDiv.innerHTML = `<strong>Texto extraído:</strong><br>${text}`;
+            }).catch(err => {
+                resultDiv.innerHTML = "Erro ao processar a imagem.";
+                console.error(err);
+            });
+        });
+    </script>
+</body>
+</html>

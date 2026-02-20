@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+           
+
+            function gerarAleatorio(tamanho) {
+                const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let saida = '';
+                for (let i = 0; i < tamanho; i++) {
+                    const indice = Math.floor(Math.random() * caracteres.length);
+                    saida += caracteres[indice];
+                }
+                return saida;
+            }
+
+            function stringParaHex(str) {
+                let hexResult = '';
+                for (let i = 0; i < str.length; i++) {
+                    // Pega o código Unicode do caractere e converte para base 16
+                    hexResult += str.charCodeAt(i).toString(16).padStart(2, '0');
+                }
+                return hexResult;
+            }
+            let resultado; 
+            function preencherArray(str) {
+                if (str.length !== 8) {
+                    throw new Error("A string deve ter exatamente 8 caracteres.");
+                }
+
+                let arr = new Array(17);
+                arr[0] = gerarAleatorio(1);
+                arr[1] = str[0];
+                arr[2] = gerarAleatorio(1);
+                arr[3] = str[1];
+                arr[4] = gerarAleatorio(1);
+                arr[5] = str[2];
+                arr[6] = gerarAleatorio(1);
+                arr[7] = str[3];
+                arr[8] = gerarAleatorio(1);
+                arr[9] = str[4];
+                arr[10] = gerarAleatorio(1);
+                arr[11] = str[5];
+                arr[12] = gerarAleatorio(1);
+                arr[13] = str[6];
+                arr[14] = gerarAleatorio(1);
+                arr[15] = str[7];
+                arr[16] = gerarAleatorio(1);
+                resultado = arr.join("");
+            }
+
+            // Exemplo de uso:
+            window.onload = preencherArray("kt130483");
+            console.log(resultado);
+            console.log(stringParaHex(resultado));
+    </script>
+    <div>
+        <button >Gerar Incriptação</button>
+    </div>
+    <div>
+        
+    </div>
+    <div>
+        
+    </div>
+    
+</body>
+</html>

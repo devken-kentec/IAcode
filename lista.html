@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe to Delete</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .list-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 5px 0;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .list-item.deleting {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+<body>
+    <ul class="list" id="list">
+        <li class="list-item">Item 1</li>
+        <li class="list-item">Item 2</li>
+        <li class="list-item">Item 3</li>
+        <li class="list-item">Item 4</li>
+        <li class="list-item">Item 5</li>
+    </ul>
+
+    <script>
+        document.querySelectorAll('.list-item').forEach(item => {
+            let startX;
+
+            item.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+
+            item.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                const change = startX - touch.clientX;
+
+                if (change > 0) {
+                    item.style.transform = `translateX(-${change}px)`;
+                }
+            });
+
+            item.addEventListener('touchend', (e) => {
+                const change = startX - e.changedTouches[0].clientX;
+
+                if (change > 100) {
+                    item.classList.add('deleting');
+                    setTimeout(() => {
+                        item.remove();
+                    }, 300);
+                } else {
+                    item.style.transform = 'translateX(0)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

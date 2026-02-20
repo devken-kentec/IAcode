@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voz para Texto</title>
+</head>
+<body>
+    <h1>Transformar Voz em Texto</h1>
+    <button id="start-btn">Iniciar Gravação</button>
+    <button id="stop-btn" disabled>Parar Gravação</button>
+    <p><strong>Texto reconhecido:</strong></p>
+    <textarea id="output" rows="10" cols="50" readonly></textarea>
+
+    <script>
+        // Verifica se o navegador suporta a API
+        if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+            alert("Seu navegador não suporta a API de reconhecimento de voz.");
+        } else {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = 'pt-BR'; // Define o idioma para português do Brasil
+            recognition.interimResults = false; // Resultados intermediários desativados
+            recognition.continuous = false; // Não continua após o reconhecimento
+
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const output = document.getElementById('output');
+
+            startBtn.addEventListener('click', () => {
+                recognition.start();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            });
+
+            stopBtn.addEventListener('click', () => {
+                recognition.stop();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                output.value += transcript + '\n';
+            };
+
+            recognition.onerror = (event) => {
+                alert('Erro no reconhecimento de voz: ' + event.error);
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            };
+
+            recognition.onend = () => {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            };
+        }
+    </script>
+</body>
+</html>

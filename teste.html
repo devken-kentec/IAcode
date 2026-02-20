@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form >
+        <button type="button">Teste</button>
+    </form>
+    <script>
+        document.querySelector('button').addEventListener('click', function(){
+            const url = new URL('http://kentec.com.br/');
+            url.searchParams.set('autorization', 'S2VubmVkeTEzMDQ=');
+            window.open(url.toString(), '_blank');
+            const teste1 = url.searchParams.get('autorization');
+            alert(teste1);
+
+
+        });
+
+     //   export class YourComponent implements OnInit {
+
+    // constructor(private route: ActivatedRoute) { }
+
+    // ngOnInit(): void {
+    // // Using snapshot
+    // const testeParam = this.route.snapshot.queryParamMap.get('teste');
+    // console.log(testeParam);
+
+    // // Using params observable
+    // this.route.queryParams.subscribe(params => {
+    //     const testeParam = params['teste'];
+    //     console.log(testeParam);
+    // });
+    </script>
+</body>
+</html>

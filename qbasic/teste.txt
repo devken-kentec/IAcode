@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema QBASIC</title>
+    <link rel="stylesheet" href="qbasic-style.css">
+</head>
+<body>
+    <div class="qbasic-container">
+        <div class="qbasic-header">
+            sistema de cadastro v1.0
+        </div>
+        
+        <div class="qbasic-menu">
+            <div class="qbasic-menu-item">arquivo</div>
+            <div class="qbasic-menu-item">editar</div>
+            <div class="qbasic-menu-item">visualizar</div>
+            <div class="qbasic-menu-item">ajuda</div>
+        </div>
+        
+        <div class="qbasic-content">
+            <p>nome: <input type="text" class="qbasic-input"></p>
+            <p>idade: <input type="text" class="qbasic-input"></p>
+            <p>sexo: <input type="text" class="qbasic-input"></p>
+            
+            <button class="qbasic-button">salvar</button>
+            <button class="qbasic-button">cancelar</button>
+        </div>
+        
+        <div class="qbasic-footer">
+            pressione f1 para ajuda | status: pronto<span class="blinking-cursor">_</span>
+        </div>
+    </div>
+</body>
+</html>

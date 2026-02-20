@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Conexão</title>
+  <script>
+    function verificarConexao() {
+      const status = navigator.onLine ? "Online" : "Offline";
+      document.getElementById("status").textContent = `Status da conexão: ${status}`;
+    }
+
+    // Atualiza o status automaticamente quando a conexão muda
+    window.addEventListener("online", verificarConexao);
+    window.addEventListener("offline", verificarConexao);
+
+    // Verifica o status ao carregar a página
+    window.onload = verificarConexao;
+  </script>
+</head>
+<body>
+  <h1>Verificar Conexão com a Internet</h1>
+  <p id="status">Verificando...</p>
+  <button onclick="verificarConexao()">Verificar Agora</button>
+</body>
+</html>

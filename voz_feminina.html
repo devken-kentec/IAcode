@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leitura de Texto com Voz</title>
+</head>
+<body>
+  <h1>Leitura de Texto com Voz</h1>
+  <textarea id="text" rows="5" cols="30" placeholder="Digite algo para ser lido..."></textarea><br>
+  <button id="speakButton">Ler Texto</button>
+
+  <script>
+    document.getElementById('speakButton').addEventListener('click', function() {
+      const text = document.getElementById('text').value; // Obtém o texto digitado
+      const speech = new SpeechSynthesisUtterance(text); // Cria o objeto de fala
+
+      // Configura a voz feminina (se disponível no navegador)
+      const voices = window.speechSynthesis.getVoices();
+      const femaleVoice = voices.find(voice => voice.name.includes('Female') || voice.gender === 'female');
+      if (femaleVoice) {
+        speech.voice = femaleVoice;
+      }
+
+      speech.lang = 'pt-br'; // Define o idioma para português do Brasil
+      speech.rate = 1; // Velocidade da fala
+      speech.pitch = 1; // Tom da voz
+
+      window.speechSynthesis.speak(speech); // Executa a fala
+    });
+  </script>
+</body>
+</html>

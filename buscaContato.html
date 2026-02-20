@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acessar Contatos</title>
+</head>
+<body>
+    <button id="getContactsButton">Obter Contatos</button>
+    <ul id="contactsList"></ul>
+
+    <script>
+        const getContactsButton = document.getElementById('getContactsButton');
+        const contactsList = document.getElementById('contactsList');
+
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        getContactsButton.addEventListener('click', async () => {
+            if (!isMobileDevice()) {
+                alert('Este recurso só está disponível em dispositivos móveis.');
+                return;
+            }
+
+            try {
+                const contacts = await navigator.contacts.select(['name', 'email', 'tel'], { multiple: true });
+                contactsList.innerHTML = '';
+                contacts.forEach(contact => {
+                    const li = document.createElement('li');
+                    li.textContent = `${contact.name[0]} - ${contact.email ? contact.email[0] : 'Sem email'} - ${contact.tel ? contact.tel[0] : 'Sem telefone'}`;
+                    contactsList.appendChild(li);
+                });
+            } catch (err) {
+                console.error('Erro ao acessar os contatos: ', err);
+            }
+        });
+    </script>
+</body>
+</html>

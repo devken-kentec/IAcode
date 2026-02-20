@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo de Modal</title>
+  <style>
+    /* Estilos para o modal */
+    .modal {
+      display: none; /* Oculto por padrão */
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5); /* Fundo semitransparente */
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Botão para abrir o modal -->
+  <button id="openModal">Abrir Modal</button>
+
+  <!-- Estrutura do modal -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p>Este é um modal simples!</p>
+    </div>
+  </div>
+
+  <script>
+    // Seleciona os elementos
+    const modal = document.getElementById("myModal");
+    const openModal = document.getElementById("openModal");
+    const closeModal = document.querySelector(".close");
+
+    // Abre o modal
+    openModal.onclick = function() {
+      modal.style.display = "block";
+    };
+
+    // Fecha o modal
+    closeModal.onclick = function() {
+      modal.style.display = "none";
+    };
+
+    // Fecha o modal ao clicar fora dele
+    window.onclick = function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  </script>
+</body>
+</html>

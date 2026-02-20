@@ -1,0 +1,81 @@
+# pip install pybluez
+#No Windows, o ELM327 precisa estar pareado antes pelo sistema (PIN comum: 1234 ou 0000).
+
+
+import bluetooth
+
+devices = bluetooth.discover_devices(duration=8, lookup_names=True)
+
+for addr, name in devices:
+    print(f"{name} - {addr}")
+
+import bluetooth
+import time
+
+ELM327_MAC = "00:1D:A5:68:98:8B"  # troque pelo seu
+PORT = 1
+
+sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+
+print("Conectando ao ELM327...")
+sock.connect((ELM327_MAC, PORT))
+print("Conectado!")
+
+def send_command(cmd):
+    sock.send((cmd + "\r").encode())
+    time.sleep(0.5)
+    data = sock.recv(1024).decode(errors="ignore")
+    return data
+
+# Inicialização básica do ELM327
+print(send_command("ATZ"))   # Reset
+print(send_command("ATE0"))  # Echo off
+print(send_command("ATL0"))  # Linefeeds off
+print(send_command("ATS0"))  # Spaces off
+print(send_command("ATH0"))  # Headers off
+
+# Exemplo: pedir RPM do motor
+response = send_command("010C")
+print("Resposta RPM:", response)
+
+sock.close()
+
+41 0C 1A F8
+
+A = int("1A", 16)
+B = int("F8", 16)
+rpm = ((A * 256) + B) / 4
+print(rpm)
+
+
+| Comando | Função                 |
+| ------- | ---------------------- |
+| `010C`  | RPM                    |
+| `010D`  | Velocidade             |
+| `0105`  | Temperatura do motor   |
+| `0111`  | Posição do acelerador  |
+| `03`    | Ler códigos de erro    |
+| `04`    | Apagar códigos de erro |
+
+
+⚠️ Problemas comuns
+
+Conecta mas não responde → Porta errada (tente PORT = 1 ou PORT = 3)
+
+Erro no Windows → Execute o Python como administrador
+
+ELM falso/clonado → Alguns travam com muitos comandos rápidos
+
+
+Se quiser, posso:
+
+Adaptar para BLE (ELM327 BLE)
+
+Criar uma classe Python organizada
+
+Ler dados em tempo real
+
+Integrar com GUI (Tkinter / PyQt)
+
+É só dizer 😎🚗💨
+

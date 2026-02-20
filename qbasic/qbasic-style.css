@@ -1,0 +1,126 @@
+body {
+    background-color: #0000AA; /* Fundo azul característico do QBASIC */
+    color: #FFFFFF; /* Texto branco */
+    font-family: 'Courier New', monospace; /* Fonte de terminal */
+    font-size: 16px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Container principal que simula a tela do QBASIC */
+.qbasic-container {
+    background-color: #0000AA;
+    border: 2px solid #FFFFFF;
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cabeçalho estilo QBASIC */
+.qbasic-header {
+    color: #FFFFFF;
+    text-align: center;
+    border-bottom: 1px solid #FFFFFF;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Menu estilo QBASIC */
+.qbasic-menu {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #FFFFFF;
+    padding-bottom: 5px;
+}
+
+.qbasic-menu-item {
+    color: #FFFFFF;
+    margin-right: 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.qbasic-menu-item:hover {
+    background-color: #FFFFFF;
+    color: #0000AA;
+}
+
+/* Área de conteúdo */
+.qbasic-content {
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+/* Rodapé estilo QBASIC */
+.qbasic-footer {
+    border-top: 1px solid #FFFFFF;
+    padding-top: 5px;
+    font-size: 0.8em;
+    color: #AAAAFF; /* Azul mais claro para informações secundárias */
+}
+
+/* Botões estilo QBASIC */
+.qbasic-button {
+    background-color: #0000AA;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 3px 10px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin: 2px;
+}
+
+.qbasic-button:hover {
+    background-color: #FFFFFF;
+    color: #0000AA;
+}
+
+/* Inputs estilo QBASIC */
+.qbasic-input {
+    background-color: #0000AA;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 3px;
+    font-family: 'Courier New', monospace;
+    margin: 2px;
+}
+
+.qbasic-input:focus {
+    outline: none;
+    background-color: #FFFFFF;
+    color: #0000AA;
+}
+
+/* Mensagens de erro/sucesso */
+.qbasic-message {
+    padding: 5px;
+    margin: 5px 0;
+}
+
+.qbasic-error {
+    background-color: #AA0000;
+    color: #FFFFFF;
+}
+
+.qbasic-success {
+    background-color: #00AA00;
+    color: #FFFFFF;
+}
+
+/* Efeito de texto piscando (como o cursor do QBASIC) */
+.blinking-cursor {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+}

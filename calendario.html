@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário Editável</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .calendar {
+            display: inline-block;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calendar-header button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            position: relative;
+        }
+        .day:hover {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .day.today {
+            background-color: #007bff;
+            color: white;
+        }
+        .note {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 5px;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        .modal input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .modal button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar">
+        <div class="calendar-header">
+            <button id="prevMonth">Anterior</button>
+            <h3 id="monthYear"></h3>
+            <button id="nextMonth">Próximo</button>
+        </div>
+        <div class="days" id="days"></div>
+    </div>
+
+    <!-- Modal para edição -->
+    <div id="modal" class="modal" style="display: none;">
+        <h3>Editar Nota</h3>
+        <input type="text" id="noteInput" placeholder="Digite sua nota aqui">
+        <button id="saveNote">Salvar</button>
+        <button id="closeModal">Cancelar</button>
+    </div>
+    <div id="overlay" class="overlay" style="display: none;"></div>
+
+    <script>
+        const daysContainer = document.getElementById('days');
+        const monthYear = document.getElementById('monthYear');
+        const prevMonth = document.getElementById('prevMonth');
+        const nextMonth = document.getElementById('nextMonth');
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('overlay');
+        const noteInput = document.getElementById('noteInput');
+        const saveNote = document.getElementById('saveNote');
+        const closeModal = document.getElementById('closeModal');
+
+        let currentDate = new Date();
+        let notes = {}; // Objeto para armazenar notas
+        let selectedDay = null;
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Atualiza o título do mês e ano
+            monthYear.textContent = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            // Limpa os dias anteriores
+            daysContainer.innerHTML = '';
+
+            // Primeiro dia do mês
+            const firstDay = new Date(year, month, 1).getDay();
+
+            // Último dia do mês
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            // Preenche os dias do calendário
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDiv = document.createElement('div');
+                daysContainer.appendChild(emptyDiv);
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.textContent = day;
+                dayDiv.classList.add('day');
+
+                // Marca o dia atual
+                const today = new Date();
+                if (
+                    day === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear()
+                ) {
+                    dayDiv.classList.add('today');
+                }
+
+                // Adiciona nota, se existir
+                if (notes[`${year}-${month}-${day}`]) {
+                    const note = document.createElement('div');
+                    note.textContent = notes[`${year}-${month}-${day}`];
+                    note.classList.add('note');
+                    dayDiv.appendChild(note);
+                }
+
+                // Adiciona evento de clique para editar
+                dayDiv.addEventListener('click', () => openModal(day));
+
+                daysContainer.appendChild(dayDiv);
+            }
+        }
+
+        function openModal(day) {
+            selectedDay = day;
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            noteInput.value = notes[`${year}-${month}-${day}`] || '';
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        function closeModalHandler() {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        function saveNoteHandler() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const noteKey = `${year}-${month}-${selectedDay}`;
+            notes[noteKey] = noteInput.value;
+            closeModalHandler();
+            renderCalendar();
+        }
+
+        // Navegação entre meses
+        prevMonth.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextMonth.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        closeModal.addEventListener('click', closeModalHandler);
+        saveNote.addEventListener('click', saveNoteHandler);
+
+        // Renderiza o calendário inicial
+        renderCalendar();
+    </script>
+</body>
+</html>

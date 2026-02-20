@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
+</head>
+<body>
+    <h1>Camera Capture</h1>
+    <video id="video" width="420" height="340" autoplay></video>
+    <button id="snap">Capture Photo</button>
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+    <a id="download" download="photo.png">Download Photo</a>
+
+    <script>
+        // Acessar a câmera frontal
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const snap = document.getElementById('snap');
+        const download = document.getElementById('download');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error("Erro ao acessar a câmera: ", err);
+            });
+
+        // Capturar a foto
+        snap.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
+            download.href = dataURL;
+            download.style.display = 'block';
+
+            // Disparar notificação
+            if (Notification.permission === 'granted') {
+                new Notification('Foto capturada com sucesso!');
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification('Foto capturada com sucesso!');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
