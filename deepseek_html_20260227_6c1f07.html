@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Gráfico de Trading</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 60vh;
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .info-panel {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            text-align: center;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .info-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .positive {
+            color: #4caf50;
+        }
+        
+        .negative {
+            color: #f44336;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button.stop {
+            background-color: #f44336;
+        }
+        
+        button.stop:hover {
+            background-color: #da190b;
+        }
+        
+        .price-display {
+            font-size: 2em;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+        }
+        
+        .current-price {
+            font-size: 1.5em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Simulador de Gráfico de Trading</h1>
+        
+        <div class="price-display">
+            <span>Preço Atual:</span>
+            <span id="currentPrice" class="current-price">$0.00</span>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">Abertura</div>
+                <div id="open" class="info-value">$0.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Fechamento Anterior</div>
+                <div id="close" class="info-value">$0.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Máxima</div>
+                <div id="high" class="info-value">$0.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mínima</div>
+                <div id="low" class="info-value">$0.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Volume</div>
+                <div id="volume" class="info-value">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Variação (24h)</div>
+                <div id="change" class="info-value">0.00%</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="tradingChart"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startSimulation()">Iniciar Simulação</button>
+            <button class="stop" onclick="stopSimulation()">Parar Simulação</button>
+            <button onclick="resetSimulation()">Resetar</button>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+        let simulationInterval;
+        let data = {
+            labels: [],
+            prices: [],
+            volumes: []
+        };
+        
+        // Configuração inicial
+        const MAX_DATA_POINTS = 50;
+        let currentPrice = 100.00;
+        let lastPrice = currentPrice;
+        let highPrice = currentPrice;
+        let lowPrice = currentPrice;
+        let totalVolume = 0;
+        
+        function initChart() {
+            const ctx = document.getElementById('tradingChart').getContext('2d');
+            
+            // Gerar dados iniciais
+            for (let i = 0; i < MAX_DATA_POINTS; i++) {
+                data.labels.push(`${i}s`);
+                data.prices.push(currentPrice);
+                data.volumes.push(Math.floor(Math.random() * 1000) + 500);
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Preço',
+                            data: data.prices,
+                            borderColor: '#4caf50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 3,
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y-price'
+                        },
+                        {
+                            label: 'Volume',
+                            data: data.volumes,
+                            type: 'bar',
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            yAxisID: 'y-volume'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#333',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        },
+                        'y-price': {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#4caf50',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        'y-volume': {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                color: '#fff',
+                                callback: function(value) {
+                                    return value.toFixed(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateInfoPanel();
+        }
+        
+        function generateNewPrice() {
+            // Simular movimento de preço com tendência aleatória e volatilidade
+            const volatility = 0.02; // 2% de volatilidade
+            const change = (Math.random() - 0.5) * volatility * currentPrice;
+            const newPrice = currentPrice + change;
+            
+            // Atualizar preços
+            lastPrice = currentPrice;
+            currentPrice = Math.max(0.01, newPrice); // Não permitir preço negativo
+            
+            // Atualizar máxima e mínima
+            if (currentPrice > highPrice) highPrice = currentPrice;
+            if (currentPrice < lowPrice) lowPrice = currentPrice;
+            
+            // Gerar volume aleatório
+            const volume = Math.floor(Math.random() * 2000) + 500;
+            totalVolume += volume;
+            
+            return {
+                price: currentPrice,
+                volume: volume
+            };
+        }
+        
+        function updateChart() {
+            const newData = generateNewPrice();
+            
+            // Adicionar novos dados
+            data.labels.push(`${data.labels.length}s`);
+            data.prices.push(newData.price);
+            data.volumes.push(newData.volume);
+            
+            // Remover dados antigos se necessário
+            if (data.labels.length > MAX_DATA_POINTS) {
+                data.labels.shift();
+                data.prices.shift();
+                data.volumes.shift();
+            }
+            
+            // Atualizar o gráfico
+            chart.data.labels = data.labels;
+            chart.data.datasets[0].data = data.prices;
+            chart.data.datasets[1].data = data.volumes;
+            chart.update();
+            
+            updateInfoPanel();
+        }
+        
+        function updateInfoPanel() {
+            // Calcular variação percentual
+            const changePercent = ((currentPrice - data.prices[0]) / data.prices[0] * 100).toFixed(2);
+            const changeClass = changePercent >= 0 ? 'positive' : 'negative';
+            const changeSymbol = changePercent >= 0 ? '+' : '';
+            
+            // Atualizar elementos HTML
+            document.getElementById('currentPrice').innerHTML = `$${currentPrice.toFixed(2)}`;
+            document.getElementById('currentPrice').className = changePercent >= 0 ? 'positive' : 'negative';
+            
+            document.getElementById('open').innerHTML = `$${data.prices[0].toFixed(2)}`;
+            document.getElementById('close').innerHTML = `$${lastPrice.toFixed(2)}`;
+            document.getElementById('high').innerHTML = `$${highPrice.toFixed(2)}`;
+            document.getElementById('low').innerHTML = `$${lowPrice.toFixed(2)}`;
+            document.getElementById('volume').innerHTML = totalVolume.toLocaleString();
+            
+            const changeElement = document.getElementById('change');
+            changeElement.innerHTML = `${changeSymbol}${changePercent}%`;
+            changeElement.className = `info-value ${changeClass}`;
+        }
+        
+        function startSimulation() {
+            if (!simulationInterval) {
+                simulationInterval = setInterval(updateChart, 1000); // Atualizar a cada 1 segundo
+            }
+        }
+        
+        function stopSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+            }
+        }
+        
+        function resetSimulation() {
+            stopSimulation();
+            
+            // Resetar dados
+            currentPrice = 100.00;
+            lastPrice = currentPrice;
+            highPrice = currentPrice;
+            lowPrice = currentPrice;
+            totalVolume = 0;
+            
+            data = {
+                labels: [],
+                prices: [],
+                volumes: []
+            };
+            
+            // Recriar dados iniciais
+            for (let i = 0; i < MAX_DATA_POINTS; i++) {
+                data.labels.push(`${i}s`);
+                data.prices.push(currentPrice);
+                data.volumes.push(Math.floor(Math.random() * 1000) + 500);
+            }
+            
+            // Atualizar gráfico
+            chart.data.labels = data.labels;
+            chart.data.datasets[0].data = data.prices;
+            chart.data.datasets[1].data = data.volumes;
+            chart.update();
+            
+            updateInfoPanel();
+        }
+        
+        // Inicializar o gráfico quando a página carregar
+        window.onload = function() {
+            initChart();
+            startSimulation(); // Iniciar automaticamente
+        };
+    </script>
+</body>
+</html>
