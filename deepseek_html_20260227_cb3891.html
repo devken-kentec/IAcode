@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revelar elementos no Scroll</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 50px 0;
+            font-size: 2.5em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .content {
+            min-height: 150vh;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Estilo base para elementos que serão revelados */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Cards com diferentes cores */
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .card p {
+            color: #666;
+        }
+
+        /* Cores diferentes para cada card */
+        .card:nth-child(1) { border-bottom: 4px solid #667eea; }
+        .card:nth-child(2) { border-bottom: 4px solid #764ba2; }
+        .card:nth-child(3) { border-bottom: 4px solid #ff6b6b; }
+        .card:nth-child(4) { border-bottom: 4px solid #4ecdc4; }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            color: white;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="reveal">✨ Elementos que Aparecem no Scroll ✨</h1>
+        
+        <div class="stats">
+            <div class="stat-item reveal">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Projetos</div>
+            </div>
+            <div class="stat-item reveal">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Clientes</div>
+            </div>
+            <div class="stat-item reveal">
+                <div class="stat-number">10+</div>
+                <div class="stat-label">Anos</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="card reveal">
+                <h3>🚀 Inovação</h3>
+                <p>Este card aparece suavemente quando você rola a página. Uma experiência única para o usuário.</p>
+            </div>
+
+            <div class="card reveal">
+                <h3>💡 Criatividade</h3>
+                <p>Cada elemento é revelado no momento certo, criando uma narrativa visual envolvente.</p>
+            </div>
+
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop" alt="Programação" class="reveal">
+
+            <div class="card reveal">
+                <h3>🎨 Design Moderno</h3>
+                <p>Animações suaves e elegantes que melhoram a experiência do usuário.</p>
+            </div>
+
+            <div class="card reveal">
+                <h3>⚡ Performance</h3>
+                <p>Código otimizado para garantir que as animações sejam suaves em todos os dispositivos.</p>
+            </div>
+
+            <div class="card reveal">
+                <h3>📱 Responsivo</h3>
+                <p>Funciona perfeitamente em desktop, tablet e dispositivos móveis.</p>
+            </div>
+
+            <div class="card reveal">
+                <h3>🎯 Fácil de Usar</h3>
+                <p>Basta adicionar a classe 'reveal' a qualquer elemento HTML.</p>
+            </div>
+
+            <div class="card reveal">
+                <h3>✨ Personalizável</h3>
+                <p>Você pode ajustar a velocidade, distância e tipo de animação facilmente.</p>
+            </div>
+        </div>
+
+        <footer class="reveal">
+            <p>Role a página para ver mais elementos aparecerem ✨</p>
+            <p>Feito com ❤️ usando HTML, CSS e JavaScript</p>
+        </footer>
+    </div>
+
+    <script>
+        // Função para verificar se o elemento está visível na tela
+        function isElementInViewport(el) {
+            const rect = el.getBoundingClientRect();
+            const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+            
+            // Elemento está visível quando está a 150px do viewport
+            return rect.top <= windowHeight - 150;
+        }
+
+        // Função para revelar elementos visíveis
+        function revealElements() {
+            const elements = document.querySelectorAll('.reveal');
+            
+            elements.forEach(element => {
+                if (isElementInViewport(element)) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        // Throttle function para melhor performance
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+
+        // Revelar elementos que já estão visíveis ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            revealElements();
+            
+            // Adicionar um pequeno atraso para garantir que tudo carregou
+            setTimeout(revealElements, 100);
+        });
+
+        // Usando throttle para limitar a frequência do evento scroll (melhor performance)
+        window.addEventListener('scroll', throttle(revealElements, 100));
+
+        // Versão alternativa com Intersection Observer (mais moderna e performática)
+        // Descomente o código abaixo e comente as linhas acima se preferir usar Intersection Observer
+        
+        /*
+        function revealWithObserver() {
+            const elements = document.querySelectorAll('.reveal');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        // Opcional: parar de observar após revelar
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.3,
+                rootMargin: '0px'
+            });
+            
+            elements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', revealWithObserver);
+        */
+
+        // Adicionar efeito de fade-in suave para o primeiro elemento
+        setTimeout(() => {
+            document.querySelector('h1').classList.add('active');
+        }, 300);
+    </script>
+</body>
+</html>
