@@ -69,19 +69,9 @@ Where
    nr_matr
 From 
   stg.t0124)
+webdesv$ (\\interdesv.pmg.goiania.go.gov.br)
+intradesv$ (\\intradesv.pmg.goiania.go.gov.br)
 
 
 
 
-
-NR_MATR 
-16679
-16716
-16741
-24925
-25091
-16725
-17806
-25087
-25181
-26011
