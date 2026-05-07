@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar CNPJ ALFA</title>
+  <script>
+
+    function validaCNPJ(cnpj) {
+        const cnpjLimpo = cnpj.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+        if (cnpjLimpo.length !== 14) return false;
+        if (/^(\w)\1{13}$/.test(cnpjLimpo)) return false;
+        const charToValue = (char) => char.charCodeAt(0) - 48;
+        const calcularDigito = (base, pesoInicial) => {
+            let soma = 0;
+            let peso = pesoInicial;
+            for (let i = 0; i < base.length; i++) {
+                const valor = charToValue(base[i]);
+                soma += valor * peso;
+                peso = (peso === 2) ? 9 : peso - 1;
+            }
+            const resto = soma % 11;
+            return resto < 2 ? 0 : 11 - resto;
+        };
+    
+        const base12 = cnpjLimpo.substring(0, 12);
+        const dv1Calculado = calcularDigito(base12, 5);
+        const base13 = base12 + dv1Calculado;
+        const dv2Calculado = calcularDigito(base13, 6);
+        const dvInformado = cnpjLimpo.substring(12, 14);
+        return dvInformado === `${dv1Calculado}${dv2Calculado}`;
+    }
+
+    function testarCnpj() {
+        var cnpjAlfa = document.getElementById("cnpjAlfa").value;
+        console.log(cnpjAlfa);
+        console.log(validaCNPJ(cnpjAlfa));
+        document.getElementById("resultado").innerText = validaCNPJ(cnpjAlfa);
+    } 
+// --- Exemplos de uso ---
+    /*console.log(validaCNPJ('12.ABC.345/01DE-35'));   // true (exemplo vÃ¡lido)
+    console.log(validaCNPJ('12.ABC.345/01DE-99'));   // false (dÃ­gitos errados)
+    console.log(validaCNPJ('11.222.333/0001-81'));   // true (CNPJ numÃ©rico tradicional)
+    console.log(validaCNPJ('12.ABC.345/01DE-3'));    // false (tamanho incorreto)*/
+  </script>
+</head>
+<body>
+    <form style="margin-top: 200px; margin-left: 500px; font-family: arial;">
+        <div style="font-weight: bold;">Alguns casos de Testes</div>
+        <p >N9.259.VLM/0001-90  /Receita Federal Válido Alfa</p>
+        <p >89.445.548/0001-59  /Receita Federal Válido Númerico</p> 
+        <p>7PYM6HSC000162    /Receita Federal Válido Alfa Sem Pontuação</p> 
+        <p>13.B4P.353/0001-11  /Receita Federal Inválido Alfa </p>
+        <p>6.9JK.J30/0001-70  /Receita Federal Inválido Menor que 14</p>
+    <hr/>
+        <input type="text" id="cnpjAlfa" name="cnpjAlfa"/>
+        <button type="button" id="teste"  onclick="testarCnpj()">Teste CNPJ Alfa e Númerico</button>
+        <br><br>
+        <div>Resultado:</div>
+        <div id="resultado" style="color: blue; font-size: 16pt;"></div>
+    </form>
+</body>
+</html>
+
+
+
+
+
