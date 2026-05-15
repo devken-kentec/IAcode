@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometria com WebAuthn</title>
+</head>
+<body>
+    <h1>Autenticação Biométrica</h1>
+    <button id="authBtn">Autenticar com impressão digital / Face ID</button>
+    <p id="status"></p>
+
+    <script>
+        // Verificar se o navegador suporta WebAuthn
+        if (!window.PublicKeyCredential) {
+            document.getElementById('status').innerText = '❌ Seu navegador não suporta WebAuthn';
+        }
+
+        // Essa função simula o registro da credencial (feito uma vez)
+        async function registerBiometry() {
+            try {
+                const publicKeyCredentialCreationOptions = {
+                    challenge: new Uint8Array(32),
+                    rp: {
+                        name: "Meu Site Exemplo",
+                        id: window.location.hostname
+                    },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: "kennedy_tomazete@outlook.com",
+                        displayName: "Kennedy Tomazete"
+                    },
+                    pubKeyCredParams: [
+                        { type: "public-key", alg: -7 },  // ES256
+                        { type: "public-key", alg: -257 } // RS256
+                    ],
+                    authenticatorSelection: {
+                        userVerification: "required",  // Exige biometria
+                        authenticatorAttachment: "platform"  // Usa biometria do dispositivo
+                    },
+                    timeout: 60000
+                };
+
+                const credential = await navigator.credentials.create({
+                    publicKey: publicKeyCredentialCreationOptions
+                });
+                
+                console.log("Credencial registrada:", credential);
+                localStorage.setItem('biometryRegistered', 'true');
+                return true;
+            } catch (error) {
+                console.error("Erro no registro:", error);
+                return false;
+            }
+        }
+
+        // Autenticação por biometria
+        async function authenticateWithBiometry() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = '🔐 Aguardando autenticação biométrica...';
+            
+            try {
+                // Opções para autenticação
+                const publicKeyCredentialRequestOptions = {
+                    challenge: new Uint8Array(32), // Em produção, vem do servidor
+                    rpId: window.location.hostname,
+                    timeout: 60000,
+                    userVerification: "required"  // Força uso de biometria
+                };
+
+                // Solicita autenticação (navegador pede impressão digital/Face ID)
+                const assertion = await navigator.credentials.get({
+                    publicKey: publicKeyCredentialRequestOptions
+                });
+
+                if (assertion) {
+                    statusDiv.innerHTML = '✅ *Autenticado com sucesso!*';
+                    statusDiv.style.color = 'green';
+                    
+                    // Dados disponíveis (sem acesso à biometria em si)
+                    console.log('ID da credencial:', assertion.id);
+                    console.log('Tipo:', assertion.type);
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.error('Erro na autenticação:', error);
+                
+                if (error.name === 'NotAllowedError') {
+                    statusDiv.innerHTML = '❌ Autenticação cancelada ou biometria falhou';
+                } else if (error.name === 'NotSupportedError') {
+                    statusDiv.innerHTML = '❌ Navegador não suporta biometria neste dispositivo';
+                } else {
+                    statusDiv.innerHTML = ❌ Erro: ${error.message};
+                }
+                
+                statusDiv.style.color = 'red';
+                return false;
+            }
+        }
+
+        // Botão principal
+        document.getElementById('authBtn').onclick = async () => {
+            // Primeiro uso: registrar biometria (se não registrado)
+            if (!localStorage.getItem('biometryRegistered')) {
+                const registered = await registerBiometry();
+                if (registered) {
+                    alert('Biometria registrada! Toque novamente para autenticar.');
+                } else {
+                    alert('Falha no registro. Seu dispositivo suporta biometria?');
+                }
+            } else {
+                // Já registrado: só autenticar
+                await authenticateWithBiometry();
+            }
+        };
+    </script>
+</body>
+</html>
