@@ -122,3 +122,36 @@
   .col-xl-11 { width: 91.666667%; }
   .col-xl-12 { width: 100%; }
 }
+
+
+
+
+// Serviço singleton compartilhado
+@Injectable({ providedIn: 'root' })
+export class DadosCompartilhadosService {
+  private dados: any = {};
+  
+  setDados(chave: string, valor: any) {
+    this.dados[chave] = valor;
+  }
+  
+  getDados(chave: string) {
+    return this.dados[chave];
+  }
+}
+
+// Componente A - define dados
+@Component({...})
+export class ComponenteA {
+  constructor(private dadosService: DadosCompartilhadosService) {
+    this.dadosService.setDados('usuario', 'João');
+  }
+}
+
+// Componente B - acessa os mesmos dados!
+@Component({...})
+export class ComponenteB {
+  constructor(private dadosService: DadosCompartilhadosService) {
+    console.log(this.dadosService.getDados('usuario')); // 'João'
+  }
+}
