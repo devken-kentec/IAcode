@@ -1,0 +1,21 @@
+07/05/2026                        CONSULTAS                           14:23:24
+                                  CADASTRO                                    
+                                                                              
+                          CONSULTA POR NOME                                   
+                                                                              
+                                                                              
+S NOME DO PROPRIETARIO       QUADRA LOTE     INSCRICAO         TIPO           
+                                                                              
+_ LUCIA MARIA TESTE CNPJ/CPF M      11       101.002.0051.0022 PREDIAL        
+_ LUCIA MARIA TESTE CNPJ     02     24       368.002.0116.0009 TERRITOR existe      
+_ ANDREIA TESTE TESTE TESTE  1      1        101.044.0133.0010          Existe      
+_ LUCIA MARIA                10     25       101.010.0015.0001 PREDIAL        
+_ MARIA DE LOURDES SOUZA MEN 117C   14/16  * 303.007.0061.0428 AP1302BX78E78AM
+_ MARIA MMMMMMMMMM           N      06     * 101.007.0202.0029 TERRITOR     inexistente  
+_ ANA MARIA BISPO TESTE      1      1      * 101.008.0027.0017 PREDIAL inexistente       
+_ MARIA                      12     12       111.111.4444.0000 TERRITOR       
+_ KENNIA MARIA DA SILVA      117C   14/16  * 303.007.0061.0037 AP303BX46T     
+_ ESTELITA MARIA LOBO BORGES 117C   14/16  * 303.007.0061.0223 AP802+BX42/42AT OK
+_ MARIA JACY NOLASCO CAVALCA 117C   14/16  * 303.007.0061.0380 AP1202+BX7676AT OK
+_ JOSE MARIA                 80     10       101.001.0030.0004 TERRITOR  não Exsite     
+_ MARIA DE LOUDES DA SILVA   331    06       309.076.0100.0016 INATIVO  Não Funciona 
