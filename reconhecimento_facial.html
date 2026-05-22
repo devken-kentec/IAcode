@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Reconhecimento Facial - Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .video-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+            transform: scaleX(-1); /* Espelha o vídeo para ficar igual ao espelho */
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-register {
+            background: #48bb78;
+        }
+
+        .btn-register:active {
+            background: #38a169;
+        }
+
+        .btn-clear {
+            background: #f56565;
+        }
+
+        .status {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .registered-faces {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .registered-faces h3 {
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .face-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .face-tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            button {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Reconhecimento Facial</h1>
+        
+        <div class="video-wrapper">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="btnRegister" class="btn-register">📸 Registrar Rosto</button>
+            <button id="btnRecognize" class="btn-register" style="background: #4299e1;">🔍 Reconhecer</button>
+            <button id="btnClear" class="btn-clear">🗑️ Limpar Registros</button>
+        </div>
+
+        <div id="status" class="status info">
+            ⏳ Carregando modelos...
+        </div>
+
+        <div class="registered-faces">
+            <h3>👥 Rostos Registrados:</h3>
+            <div id="faceList" class="face-list">
+                <span style="color: #a0aec0;">Nenhum rosto registrado</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+        // Variáveis globais
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let context = canvas.getContext('2d');
+        let modelsLoaded = false;
+        let registeredFaces = []; // Array para armazenar rostos registrados
+        
+        // Elementos da UI
+        let statusDiv = document.getElementById('status');
+        let faceListDiv = document.getElementById('faceList');
+        let btnRegister = document.getElementById('btnRegister');
+        let btnRecognize = document.getElementById('btnRecognize');
+        let btnClear = document.getElementById('btnClear');
+
+        // Carregar modelos do face-api.js
+        async function loadModels() {
+            try {
+                updateStatus('📥 Baixando modelos de IA... (pode levar alguns segundos)', 'info');
+                
+                // URLs dos modelos (versão mais leve para mobile)
+                const modelUrl = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+                
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl)
+                ]);
+                
+                modelsLoaded = true;
+                updateStatus('✅ Modelos carregados! Aguardando câmera...', 'success');
+                startCamera();
+            } catch (error) {
+                console.error('Erro ao carregar modelos:', error);
+                updateStatus('❌ Erro ao carregar modelos. Recarregue a página.', 'error');
+            }
+        }
+
+        // Iniciar câmera
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: 'user', // Câmera frontal no celular
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    video.play();
+                    updateStatus('📷 Câmera ativa! Posicione seu rosto na tela', 'success');
+                    startFaceDetection();
+                };
+            } catch (error) {
+                console.error('Erro ao acessar câmera:', error);
+                updateStatus('❌ Não foi possível acessar a câmera. Verifique as permissões.', 'error');
+            }
+        }
+
+        // Iniciar detecção de rosto em tempo real
+        function startFaceDetection() {
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            
+            // Configurar canvas com as mesmas dimensões do vídeo
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            setInterval(async () => {
+                if (!modelsLoaded || video.paused || video.ended) return;
+                
+                try {
+                    // Detectar rostos
+                    const detections = await faceapi.detectAllFaces(
+                        video, 
+                        new faceapi.TinyFaceDetectorOptions()
+                    ).withFaceLandmarks().withFaceDescriptors();
+                    
+                    // Desenhar no canvas
+                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Desenhar bounding boxes e pontos faciais
+                    faceapi.draw.drawDetections(canvas, resizedDetections);
+                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+                    
+                    // Se houver rostos registrados, tentar reconhecimento automaticamente
+                    if (registeredFaces.length > 0 && detections.length > 0) {
+                        await autoRecognize(detections);
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro na detecção:', error);
+                }
+            }, 100);
+        }
+
+        // Reconhecimento automático
+        async function autoRecognize(detections) {
+            for (const detection of detections) {
+                let bestMatch = null;
+                let bestDistance = 0.6; // Limiar de reconhecimento (menor = mais rigoroso)
+                
+                for (const registered of registeredFaces) {
+                    const distance = faceapi.euclideanDistance(
+                        detection.descriptor,
+                        registered.descriptor
+                    );
+                    
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestMatch = registered;
+                    }
+                }
+                
+                if (bestMatch) {
+                    // Desenhar nome no rosto reconhecido
+                    const box = detection.detection.box;
+                    context.font = "20px Arial";
+                    context.fillStyle = "#48bb78";
+                    context.fillText(bestMatch.name, box.x, box.y - 5);
+                    context.strokeStyle = "#48bb78";
+                    context.lineWidth = 3;
+                    context.strokeRect(box.x, box.y, box.width, box.height);
+                }
+            }
+        }
+
+        // Registrar rosto atual
+        async function registerFace() {
+            if (!modelsLoaded) {
+                updateStatus('⏳ Aguarde os modelos carregarem...', 'info');
+                return;
+            }
+            
+            updateStatus('📸 Detectando rosto...', 'info');
+            
+            try {
+                const detection = await faceapi.detectSingleFace(
+                    video,
+                    new faceapi.TinyFaceDetectorOptions()
+                ).withFaceLandmarks().withFaceDescriptor();
+                
+                if (!detection) {
+                    updateStatus('❌ Nenhum rosto detectado! Posicione-se corretamente.', 'error');
+                    return;
+                }
+                
+                const name = `Pessoa ${registeredFaces.length + 1}`;
+                registeredFaces.push({
+                    name: name,
+                    descriptor: detection.descriptor
+                });
+                
+                updateFaceList();
+                updateStatus(`✅ ${name} registrado com sucesso!`, 'success');
+                
+                // Feedback visual
+                showTemporaryMessage(`🎉 ${name} registrado!`, 'success');
+                
+            } catch (error) {
+                console.error('Erro ao registrar:', error);
+                updateStatus('❌ Erro ao registrar rosto. Tente novamente.', 'error');
+            }
+        }
+
+        // Reconhecer rosto manualmente
+        async function recognizeFace() {
+            if (!modelsLoaded) {
+                updateStatus('⏳ Aguarde os modelos carregarem...', 'info');
+                return;
+            }
+            
+            if (registeredFaces.length === 0) {
+                updateStatus('⚠️ Nenhum rosto registrado! Cadastre alguém primeiro.', 'info');
+                return;
+            }
+            
+            updateStatus('🔍 Reconhecendo rosto...', 'info');
+            
+            try {
+                const detection = await faceapi.detectSingleFace(
+                    video,
+                    new faceapi.TinyFaceDetectorOptions()
+                ).withFaceLandmarks().withFaceDescriptor();
+                
+                if (!detection) {
+                    updateStatus('❌ Nenhum rosto detectado!', 'error');
+                    return;
+                }
+                
+                let bestMatch = null;
+                let bestDistance = 0.6;
+                
+                for (const registered of registeredFaces) {
+                    const distance = faceapi.euclideanDistance(
+                        detection.descriptor,
+                        registered.descriptor
+                    );
+                    
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestMatch = registered;
+                    }
+                }
+                
+                if (bestMatch) {
+                    const confidence = Math.round((1 - bestDistance) * 100);
+                    updateStatus(`✅ Reconhecido: ${bestMatch.name} (${confidence}% de confiança)`, 'success');
+                    showTemporaryMessage(`👋 Olá, ${bestMatch.name}!`, 'success');
+                } else {
+                    updateStatus('❌ Rosto não reconhecido! Tente registrar este rosto primeiro.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao reconhecer:', error);
+                updateStatus('❌ Erro ao reconhecer. Tente novamente.', 'error');
+            }
+        }
+
+        // Limpar todos os registros
+        function clearFaces() {
+            registeredFaces = [];
+            updateFaceList();
+            updateStatus('🗑️ Todos os rostos foram removidos!', 'info');
+            showTemporaryMessage('Registros limpos!', 'info');
+        }
+
+        // Atualizar lista de rostos registrados na UI
+        function updateFaceList() {
+            if (registeredFaces.length === 0) {
+                faceListDiv.innerHTML = '<span style="color: #a0aec0;">Nenhum rosto registrado</span>';
+                return;
+            }
+            
+            faceListDiv.innerHTML = registeredFaces.map(face => 
+                `<div class="face-tag">${face.name}</div>`
+            ).join('');
+        }
+
+        // Atualizar mensagem de status
+        function updateStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Mostrar mensagem temporária
+        function showTemporaryMessage(message, type) {
+            const originalStatus = statusDiv.textContent;
+            const originalClass = statusDiv.className;
+            
+            updateStatus(message, type);
+            setTimeout(() => {
+                updateStatus(originalStatus, originalClass);
+            }, 2000);
+        }
+
+        // Event listeners
+        btnRegister.addEventListener('click', registerFace);
+        btnRecognize.addEventListener('click', recognizeFace);
+        btnClear.addEventListener('click', clearFaces);
+
+        // Iniciar aplicação
+        loadModels();
+        
+        // Ajustar canvas quando o vídeo redimensionar
+        video.addEventListener('resize', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        });
+    </script>
+</body>
+</html>
