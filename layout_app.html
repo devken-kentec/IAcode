@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Guia Local - Catálogo Comercial da Região</title>
+    <!-- Font Awesome 6 (Free Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter modern sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fc;
+            color: #1e2a3e;
+            line-height: 1.5;
+        }
+
+        /* container padrão */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* HEADER */
+        .main-header {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            gap: 16px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e6f5c, #289672);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .logo-area p {
+            font-size: 0.8rem;
+            color: #5a6874;
+            letter-spacing: -0.2px;
+        }
+
+        /* Barra de busca principal */
+        .search-wrapper {
+            flex: 2;
+            min-width: 260px;
+        }
+
+        .search-box {
+            display: flex;
+            background: white;
+            border: 1px solid #cfdfe8;
+            border-radius: 60px;
+            overflow: hidden;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .search-box:focus-within {
+            border-color: #289672;
+            box-shadow: 0 0 0 3px rgba(40,150,114,0.2);
+        }
+
+        .search-box i {
+            padding: 14px 0 14px 18px;
+            color: #8da1ae;
+            font-size: 1.1rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 14px 8px 14px 4px;
+            font-size: 1rem;
+            outline: none;
+            font-weight: 500;
+            background: transparent;
+        }
+
+        .search-box button {
+            background: #289672;
+            border: none;
+            padding: 0 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-box button:hover {
+            background: #1e5f4c;
+        }
+
+        /* filtros rápidos */
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .filter-chip {
+            background: #eef2f5;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2c3e4e;
+        }
+
+        .filter-chip i {
+            margin-right: 6px;
+            font-size: 0.8rem;
+        }
+
+        .filter-chip.active, .filter-chip:hover {
+            background: #289672;
+            color: white;
+        }
+
+        /* Espaço para anúncios - DESTAQUE */
+        .ad-spotlight {
+            background: linear-gradient(105deg, #fef9e6 0%, #fff3df 100%);
+            border-radius: 28px;
+            padding: 20px 28px;
+            margin: 32px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ffe1b3;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.02);
+        }
+
+        .ad-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .ad-badge {
+            background: #d98c2b;
+            color: white;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .ad-text h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #b45f1b;
+        }
+
+        .ad-text p {
+            color: #6b4c2c;
+        }
+
+        .ad-button {
+            background: #d98c2b;
+            color: white;
+            padding: 12px 26px;
+            border-radius: 40px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.2s;
+            display: inline-block;
+        }
+
+        .ad-button:hover {
+            background: #b96f1a;
+            transform: scale(0.97);
+        }
+
+        /* Banner secundário (anúncio lateral superior opcional) */
+        .banner-ad {
+            background: #e5eef3;
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #2c6979;
+            border: 1px dashed #7fbfb0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .banner-ad span {
+            font-weight: 600;
+        }
+
+        .banner-ad a {
+            background: #2c7a64;
+            color: white;
+            padding: 5px 16px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.75rem;
+        }
+
+        /* Grid de estabelecimentos */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 20px 0 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .results-header h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .results-count {
+            color: #5e7a8c;
+            font-weight: 500;
+        }
+
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 26px;
+            margin-bottom: 50px;
+        }
+
+        .business-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2edf2;
+        }
+
+        .business-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.12);
+        }
+
+        .card-img {
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            background-color: #cbdbe2;
+            position: relative;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .card-info {
+            padding: 18px;
+        }
+
+        .card-info h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .category {
+            color: #289672;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .address {
+            font-size: 0.85rem;
+            color: #5b6f7e;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .contact {
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .contact span i {
+            margin-right: 5px;
+            color: #289672;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 40px;
+            color: #5f7d95;
+        }
+
+        /* rodapé */
+        .footer {
+            background: #0f2c2a;
+            color: #cddfda;
+            padding: 32px 0;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 680px) {
+            .header-inner {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .ad-spotlight {
+                flex-direction: column;
+                text-align: center;
+                gap: 18px;
+            }
+            .ad-content {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container header-inner">
+        <div class="logo-area">
+            <h1><i class="fas fa-store"></i> Guia Local</h1>
+            <p>Catálogo completo da sua região</p>
+        </div>
+        <div class="search-wrapper">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Busque por nome, categoria ou bairro..." autocomplete="off">
+                <button id="searchBtn"><i class="fas fa-arrow-right"></i> Buscar</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <!-- Filtros rápidos por categoria (espaço interativo) -->
+    <div class="filter-tags" id="filterContainer">
+        <!-- Os filtros serão dinâmicos via JS baseado nas categorias existentes -->
+    </div>
+
+    <!-- ESPAÇO PARA ANÚNCIOS - PRINCIPAL (Destaque patrocinado) -->
+    <div class="ad-spotlight">
+        <div class="ad-content">
+            <div class="ad-badge"><i class="fas fa-crown"></i> DESTAQUE</div>
+            <div class="ad-text">
+                <h3>Seu negócio aqui em destaque!</h3>
+                <p>Alcance milhares de clientes na região. Anuncie no maior diretório local.</p>
+            </div>
+        </div>
+        <a href="#" class="ad-button">Anunciar agora <i class="fas fa-chevron-right"></i></a>
+    </div>
+
+    <!-- Banner adicional exemplo (espaço para anúncio secundário) -->
+    <div class="banner-ad">
+        <span><i class="fas fa-bullhorn"></i> Espaço promocional - Ofertas imperdíveis dos estabelecimentos parceiros!</span>
+        <a href="#">Ver ofertas <i class="fas fa-tags"></i></a>
+    </div>
+
+    <!-- resultados da busca / catálogo -->
+    <div class="results-header">
+        <h2><i class="fas fa-building"></i> Estabelecimentos</h2>
+        <div class="results-count" id="resultsCount">Carregando...</div>
+    </div>
+
+    <div id="businessGrid" class="business-grid">
+        <!-- cards serão preenchidos via JS -->
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p><i class="fas fa-map-marker-alt"></i> Guia Local - Conectando você aos melhores estabelecimentos da região</p>
+        <p style="margin-top: 12px;">© 2025 | Catálogo comercial | Espaço para anúncios - Divulgue seu negócio</p>
+    </div>
+</footer>
+
+<script>
+    // ---------- BASE DE DADOS DE ESTABELECIMENTOS (simulação) ----------
+    const establishments = [
+        { id: 1, name: "Padaria e Confeitaria Sabor Caseiro", category: "Alimentação", sub: "Padaria", address: "Rua das Flores, 123 - Centro", phone: "(11) 3456-7890", image: "https://placehold.co/600x400/f5e7d3/7a5b3e?text=Padaria+Sabor", rating: 4.8 },
+        { id: 2, name: "Farmácia Popular do Bairro", category: "Saúde", sub: "Farmácia", address: "Av. Brasil, 987 - Jardim América", phone: "(11) 3322-1122", image: "https://placehold.co/600x400/d9f0f7/2c6979?text=Farmácia+Popular" },
+        { id: 3, name: "Academia Corpo & Saúde", category: "Esportes", sub: "Academia", address: "Rua do Esporte, 45 - Vila Olímpica", phone: "(11) 98765-4321", image: "https://placehold.co/600x400/ccf2e6/1e6f5c?text=Academia+Corpo" },
+        { id: 4, name: "Mercado São José", category: "Supermercado", sub: "Mercearia", address: "Praça da Matriz, 67 - Centro", phone: "(11) 3444-5566", image: "https://placehold.co/600x400/fce9cf/b45f1b?text=Mercado+São+José" },
+        { id: 5, name: "Oficina Mecânica Rápida", category: "Automotivo", sub: "Oficina", address: "Rua das Oficinas, 222 - Industrial", phone: "(11) 3777-8899", image: "https://placehold.co/600x400/e0e7ff/334e68?text=Mecânica+Rápida" },
+        { id: 6, name: "Café & Livraria Página Doce", category: "Alimentação", sub: "Cafeteria", address: "Rua dos Poetas, 89 - Vila Literária", phone: "(11) 3555-7788", image: "https://placehold.co/600x400/eeddcc/8b5a2b?text=Café+Livraria" },
+        { id: 7, name: "Clínica Odontológica Sorriso", category: "Saúde", sub: "Odontologia", address: "Av. Paulista, 1500 - Bela Vista", phone: "(11) 3666-9900", image: "https://placehold.co/600x400/d4f1f9/1f6d7a?text=Odonto+Sorriso" },
+        { id: 8, name: "Boutique Moda Atual", category: "Moda", sub: "Roupas", address: "Rua das Compras, 301 - Centro", phone: "(11) 3888-1122", image: "https://placehold.co/600x400/f7e9e3/ba6b4c?text=Boutique+Moda" },
+        { id: 9, name: "Pet Shop & Estética Animal", category: "Pet", sub: "Pet Shop", address: "Rua dos Bichos, 55 - Jardim Pet", phone: "(11) 3737-2424", image: "https://placehold.co/600x400/e6f2ef/2f8b6c?text=Pet+Shop" },
+        { id: 10, name: "Papelaria e Gráfica Rápida", category: "Serviços", sub: "Papelaria", address: "Rua da Escola, 72 - Centro", phone: "(11) 3900-5050", image: "https://placehold.co/600x400/fcf2de/b57c48?text=Papelaria" },
+        { id: 11, name: "Restaurante Tempero da Terra", category: "Alimentação", sub: "Restaurante", address: "Rua Gastronômica, 888 - Bairro Novo", phone: "(11) 3123-4567", image: "https://placehold.co/600x400/f3e1cf/9b5e2c?text=Restaurante" }
+    ];
+
+    // categorias únicas para filtros
+    function getUniqueCategories() {
+        const cats = establishments.map(est => est.category);
+        return [...new Set(cats)].sort();
+    }
+
+    let currentFilterCategory = "TODOS";  // "TODOS" ou categoria específica
+    let currentSearchTerm = "";
+
+    // referências DOM
+    const businessGrid = document.getElementById('businessGrid');
+    const resultsCountSpan = document.getElementById('resultsCount');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const filterContainer = document.getElementById('filterContainer');
+
+    // função de filtro combinado (categoria + texto)
+    function filterEstablishments() {
+        let filtered = [...establishments];
+
+        // Filtro por categoria (se não for TODOS)
+        if (currentFilterCategory !== "TODOS") {
+            filtered = filtered.filter(est => est.category === currentFilterCategory);
+        }
+
+        // Filtro por busca textual (nome, categoria, sub, endereço)
+        if (currentSearchTerm.trim() !== "") {
+            const term = currentSearchTerm.trim().toLowerCase();
+            filtered = filtered.filter(est => 
+                est.name.toLowerCase().includes(term) ||
+                est.category.toLowerCase().includes(term) ||
+                (est.sub && est.sub.toLowerCase().includes(term)) ||
+                est.address.toLowerCase().includes(term)
+            );
+        }
+
+        return filtered;
+    }
+
+    // renderizar cards de estabelecimentos
+    function renderBusinesses() {
+        const filteredData = filterEstablishments();
+        resultsCountSpan.innerText = `${filteredData.length} estabelecimento${filteredData.length !== 1 ? 's' : ''} encontrado${filteredData.length !== 1 ? 's' : ''}`;
+        
+        if (filteredData.length === 0) {
+            businessGrid.innerHTML = `<div class="no-results"><i class="fas fa-store-slash" style="font-size: 48px; opacity: 0.6;"></i><h3 style="margin: 16px 0 8px;">Nenhum resultado encontrado</h3><p>Tente outro termo ou categoria, ou veja todos os estabelecimentos novamente.</p></div>`;
+            return;
+        }
+
+        let html = '';
+        filteredData.forEach(est => {
+            // fallback de imagem
+            const imgUrl = est.image || "https://placehold.co/600x400/e9ecef/8c9aa5?text=Estabelecimento";
+            html += `
+                <div class="business-card">
+                    <div class="card-img" style="background-image: url('${imgUrl}');">
+                        <div class="card-badge"><i class="fas fa-star"></i> ${est.rating ? est.rating : '4.5'}</div>
+                    </div>
+                    <div class="card-info">
+                        <h3>${escapeHtml(est.name)}</h3>
+                        <div class="category"><i class="fas fa-tag"></i> ${escapeHtml(est.category)} ${est.sub ? ` • ${escapeHtml(est.sub)}` : ''}</div>
+                        <div class="address"><i class="fas fa-location-dot"></i> ${escapeHtml(est.address)}</div>
+                        <div class="contact"><span><i class="fas fa-phone-alt"></i> ${est.phone}</span></div>
+                    </div>
+                </div>
+            `;
+        });
+        businessGrid.innerHTML = html;
+    }
+
+    // auxiliar segurança
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // renderizar botões de filtro (chips)
+    function renderFilters() {
+        const categories = getUniqueCategories();
+        let chipsHtml = `<div class="filter-chip ${currentFilterCategory === "TODOS" ? 'active' : ''}" data-cat="TODOS"><i class="fas fa-th-large"></i> Todos</div>`;
+        categories.forEach(cat => {
+            chipsHtml += `<div class="filter-chip ${currentFilterCategory === cat ? 'active' : ''}" data-cat="${cat}"><i class="fas fa-${getIconForCategory(cat)}"></i> ${cat}</div>`;
+        });
+        filterContainer.innerHTML = chipsHtml;
+
+        // adicionar eventos aos chips
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                const catValue = chip.getAttribute('data-cat');
+                if (catValue) {
+                    currentFilterCategory = catValue;
+                    // atualizar visual ativo
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    // re-renderizar resultados
+                    renderBusinesses();
+                }
+            });
+        });
+    }
+
+    // pequeno helper para ícones das categorias (opcional)
+    function getIconForCategory(cat) {
+        const map = {
+            "Alimentação": "utensils",
+            "Saúde": "heartbeat",
+            "Esportes": "dumbbell",
+            "Supermercado": "cart-shopping",
+            "Automotivo": "car",
+            "Moda": "shirt",
+            "Pet": "dog",
+            "Serviços": "print",
+            "Padaria": "bread-slice"
+        };
+        return map[cat] || "store";
+    }
+
+    // lidar com busca ativa (botão e tecla Enter)
+    function performSearch() {
+        currentSearchTerm = searchInput.value;
+        renderBusinesses();
+    }
+
+    function resetSearchAndFilters() {
+        currentSearchTerm = "";
+        currentFilterCategory = "TODOS";
+        searchInput.value = "";
+        renderFilters();     // recria chips e redefine o 'active' para TODOS
+        renderBusinesses();
+    }
+
+    // eventos
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+    });
+
+    // opção de limpeza rápida? clicar no logo pode resetar, boa prática.
+    const logoArea = document.querySelector('.logo-area');
+    if (logoArea) {
+        logoArea.style.cursor = 'pointer';
+        logoArea.addEventListener('click', () => {
+            resetSearchAndFilters();
+        });
+    }
+
+    // inicializar página
+    function init() {
+        renderFilters();
+        renderBusinesses();
+        // Simular um anúncio rotativo? mas espaço já está alocado, estático com links.
+        // Garantir que os banners de anúncio são clicáveis e chamativos.
+        // Os anúncios podem ser alterados futuramente, já temos o espaço.
+    }
+
+    init();
+
+    // Espaço adicional: Mensagem no console para demonstrar área de anúncio interativa
+    console.log("Página inicial - Diretório comercial com espaço para anúncios e catálogo de estabelecimentos");
+</script>
+</body>
+</html>

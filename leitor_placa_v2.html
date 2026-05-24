@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leitor de Placas - Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+            color: #4CAF50;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            aspect-ratio: 4/3;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid #4CAF50;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .scan-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 25%;
+            border: 3px solid #4CAF50;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { border-color: #4CAF50; }
+            50% { border-color: #8BC34A; }
+            100% { border-color: #4CAF50; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: #2196F3;
+        }
+
+        .result-container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .result-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .plate-number {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-align: center;
+            color: #4CAF50;
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            word-break: break-all;
+        }
+
+        .plate-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        .history {
+            margin-top: 20px;
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #444;
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .error {
+            color: #f44336;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(244, 67, 54, 0.1);
+            border-radius: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📷 Leitor de Placas</h1>
+        
+        <div class="video-container">
+            <video id="video" playsinline autoplay></video>
+            <div class="overlay"></div>
+            <div class="scan-area"></div>
+        </div>
+
+        <div class="controls">
+            <button id="startCamera" class="secondary">📷 Iniciar Câmera</button>
+            <button id="captureBtn">📸 Capturar</button>
+            <button id="toggleCamera">🔄 Trocar Câmera</button>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="loading" class="loading" style="display: none;">Processando imagem...</div>
+
+        <div class="result-container">
+            <div class="result-title">Placa Detectada:</div>
+            <div id="plateResult" class="plate-number">---</div>
+            <div id="plateInfo" class="plate-info"></div>
+        </div>
+
+        <div class="history">
+            <div class="result-title">📋 Histórico de Leituras</div>
+            <div id="historyList"></div>
+        </div>
+
+        <div class="footer">
+            Aponte para a placa do veículo e capture
+        </div>
+    </div>
+
+    <!-- Incluindo Tesseract.js para OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
+    <script>
+        class PlateReader {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.startBtn = document.getElementById('startCamera');
+                this.captureBtn = document.getElementById('captureBtn');
+                this.toggleBtn = document.getElementById('toggleCamera');
+                this.errorDiv = document.getElementById('error');
+                this.loadingDiv = document.getElementById('loading');
+                this.plateResult = document.getElementById('plateResult');
+                this.plateInfo = document.getElementById('plateInfo');
+                this.historyList = document.getElementById('historyList');
+                
+                this.stream = null;
+                this.facingMode = 'environment'; // começa com câmera traseira
+                this.history = [];
+                
+                this.initEventListeners();
+                this.loadHistory();
+            }
+
+            initEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startCamera());
+                this.captureBtn.addEventListener('click', () => this.captureImage());
+                this.toggleBtn.addEventListener('click', () => this.toggleCamera());
+                
+                // Verifica permissões ao carregar
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.checkPermissions();
+                });
+            }
+
+            showError(message) {
+                this.errorDiv.textContent = message;
+                this.errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    this.errorDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            showLoading(show) {
+                this.loadingDiv.style.display = show ? 'block' : 'none';
+            }
+
+            async checkPermissions() {
+                try {
+                    const result = await navigator.permissions.query({ name: 'camera' });
+                    if (result.state === 'granted') {
+                        this.startCamera();
+                    }
+                } catch (e) {
+                    console.log('Permissão não suportada, continuando...');
+                }
+            }
+
+            async startCamera() {
+                try {
+                    if (this.stream) {
+                        this.stopCamera();
+                    }
+
+                    const constraints = {
+                        video: {
+                            facingMode: this.facingMode,
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.video.srcObject = this.stream;
+                    
+                    this.startBtn.textContent = '📷 Câmera Ativa';
+                    this.startBtn.style.background = '#4CAF50';
+                    
+                } catch (err) {
+                    this.showError('Erro ao acessar câmera: ' + err.message);
+                    console.error(err);
+                }
+            }
+
+            stopCamera() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+            }
+
+            async toggleCamera() {
+                this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+                await this.startCamera();
+            }
+
+            async captureImage() {
+                if (!this.stream) {
+                    this.showError('Inicie a câmera primeiro!');
+                    return;
+                }
+
+                this.showLoading(true);
+                
+                try {
+                    // Criar canvas e capturar frame
+                    const canvas = document.createElement('canvas');
+                    canvas.width = this.video.videoWidth;
+                    canvas.height = this.video.videoHeight;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Recortar área central onde a placa deve estar
+                    const cropWidth = canvas.width * 0.6;
+                    const cropHeight = canvas.height * 0.3;
+                    const cropX = (canvas.width - cropWidth) / 2;
+                    const cropY = (canvas.height - cropHeight) / 2;
+                    
+                    const croppedCanvas = document.createElement('canvas');
+                    croppedCanvas.width = cropWidth;
+                    croppedCanvas.height = cropHeight;
+                    
+                    const croppedCtx = croppedCanvas.getContext('2d');
+                    croppedCtx.drawImage(
+                        canvas, 
+                        cropX, cropY, cropWidth, cropHeight,
+                        0, 0, cropWidth, cropHeight
+                    );
+                    
+                    // Pré-processamento da imagem
+                    const processedCanvas = this.preprocessImage(croppedCanvas);
+                    
+                    // Converter para base64
+                    const imageData = processedCanvas.toDataURL('image/jpeg', 0.8);
+                    
+                    // Realizar OCR
+                    const plateText = await this.performOCR(imageData);
+                    
+                    if (plateText) {
+                        this.processPlateResult(plateText);
+                    } else {
+                        this.plateResult.textContent = 'Não detectado';
+                        this.plateInfo.textContent = 'Tente novamente com melhor iluminação';
+                    }
+                    
+                } catch (err) {
+                    this.showError('Erro ao processar imagem: ' + err.message);
+                    console.error(err);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            preprocessImage(canvas) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                // Aumentar contraste
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i];
+                    let g = data[i + 1];
+                    let b = data[i + 2];
+                    
+                    // Converter para escala de cinza
+                    let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    
+                    // Aumentar contraste
+                    gray = gray > 128 ? Math.min(255, gray + 50) : Math.max(0, gray - 50);
+                    
+                    data[i] = gray;
+                    data[i + 1] = gray;
+                    data[i + 2] = gray;
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                return canvas;
+            }
+
+            async performOCR(imageData) {
+                try {
+                    const result = await Tesseract.recognize(
+                        imageData,
+                        'eng',
+                        {
+                            logger: m => console.log(m),
+                            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+                            tessedit_pageseg_mode: '8' // Modo para texto único
+                        }
+                    );
+                    
+                    // Limpar e validar texto
+                    let text = result.data.text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    
+                    // Validar formato de placa brasileira (antigo ou Mercosul)
+                    if (this.validatePlate(text)) {
+                        return text;
+                    } else if (text.length >= 7) {
+                        // Tentar extrair 7 caracteres válidos
+                        return this.extractPlate(text);
+                    }
+                    
+                    return null;
+                    
+                } catch (err) {
+                    console.error('OCR Error:', err);
+                    return null;
+                }
+            }
+
+            validatePlate(text) {
+                // Formato antigo: AAA-9999
+                const oldFormat = /^[A-Z]{3}\d{4}$/;
+                // Formato Mercosul: AAA9A99
+                const mercosulFormat = /^[A-Z]{3}\d[A-Z]\d{2}$/;
+                
+                return oldFormat.test(text) || mercosulFormat.test(text);
+            }
+
+            extractPlate(text) {
+                // Tentar extrair padrão de placa do texto
+                const patterns = [
+                    /[A-Z]{3}\d{4}/,  // AAA9999
+                    /[A-Z]{3}\d[A-Z]\d{2}/,  // AAA9A99
+                    /[A-Z]{3}[-\s]?\d{4}/  // AAA-9999 com separador
+                ];
+                
+                for (let pattern of patterns) {
+                    const match = text.match(pattern);
+                    if (match) {
+                        return match[0].replace(/[-\s]/g, '');
+                    }
+                }
+                
+                return text.substring(0, 7); // Retorna primeiros 7 caracteres
+            }
+
+            processPlateResult(plate) {
+                this.plateResult.textContent = plate;
+                
+                // Adicionar formatação visual
+                let formatted = '';
+                if (plate.length === 7) {
+                    if (/^[A-Z]{3}\d{4}$/.test(plate)) {
+                        formatted = plate.substring(0, 3) + '-' + plate.substring(3);
+                    } else {
+                        formatted = plate.substring(0, 3) + plate.substring(3, 4) + 
+                                   plate.substring(4, 5) + plate.substring(5);
+                    }
+                }
+                
+                const timestamp = new Date().toLocaleString('pt-BR');
+                this.addToHistory(plate, timestamp);
+                
+                this.plateInfo.innerHTML = `
+                    <strong>Formato:</strong> ${this.getPlateFormat(plate)}<br>
+                    <strong>Data/Hora:</strong> ${timestamp}<br>
+                    <strong>Formatada:</strong> ${formatted || plate}
+                `;
+            }
+
+            getPlateFormat(plate) {
+                if (/^[A-Z]{3}\d{4}$/.test(plate)) return 'Padrão Antigo (AAA-9999)';
+                if (/^[A-Z]{3}\d[A-Z]\d{2}$/.test(plate)) return 'Mercosul (AAA9A99)';
+                return 'Formato não identificado';
+            }
+
+            addToHistory(plate, timestamp) {
+                this.history.unshift({ plate, timestamp });
+                
+                // Manter apenas últimos 10 registros
+                if (this.history.length > 10) {
+                    this.history.pop();
+                }
+                
+                this.updateHistoryDisplay();
+                this.saveHistory();
+            }
+
+            updateHistoryDisplay() {
+                if (this.history.length === 0) {
+                    this.historyList.innerHTML = '<div class="history-item">Nenhuma leitura ainda</div>';
+                    return;
+                }
+                
+                this.historyList.innerHTML = this.history.map(item => 
+                    `<div class="history-item">${item.plate} - ${item.timestamp}</div>`
+                ).join('');
+            }
+
+            saveHistory() {
+                localStorage.setItem('plateHistory', JSON.stringify(this.history));
+            }
+
+            loadHistory() {
+                const saved = localStorage.getItem('plateHistory');
+                if (saved) {
+                    this.history = JSON.parse(saved);
+                    this.updateHistoryDisplay();
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        const reader = new PlateReader();
+    </script>
+</body>
+</html>
