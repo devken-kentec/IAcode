@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparar Faces - Mesma Pessoa?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .image-box {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .image-box h3 {
+            margin-top: 0;
+        }
+        canvas, img {
+            width: 100%;
+            max-width: 300px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        input {
+            margin: 10px 0;
+            display: block;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .similar {
+            color: green;
+        }
+        .different {
+            color: red;
+        }
+        .loading {
+            color: orange;
+        }
+        .warning {
+            background: #ffeb3b;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Comparador de Faces</h1>
+    <div class="warning">
+        ⚠️ <strong>Aviso:</strong> O modelo precisa ser baixado na primeira execução. Aguarde o carregamento completo.
+        <div id="status">📥 Carregando modelos de detecção facial...</div>
+    </div>
+
+    <div class="container">
+        <div class="image-box">
+            <h3>Imagem 1 (Pessoa A)</h3>
+            <input type="file" id="inputImg1" accept="image/*">
+            <canvas id="canvas1"></canvas>
+        </div>
+        <div class="image-box">
+            <h3>Imagem 2 (Pessoa B)</h3>
+            <input type="file" id="inputImg2" accept="image/*">
+            <canvas id="canvas2"></canvas>
+        </div>
+    </div>
+
+    <button id="compareBtn">🔎 Comparar Faces</button>
+    <div class="result" id="result"></div>
+
+    <!-- Carregar bibliotecas necessárias -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.2/dist/face-landmarks-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+        let modelLoaded = false;
+        let img1FaceDescriptor = null;
+        let img2FaceDescriptor = null;
+        let img1Canvas = document.getElementById('canvas1');
+        let img2Canvas = document.getElementById('canvas2');
+        let ctx1 = img1Canvas.getContext('2d');
+        let ctx2 = img2Canvas.getContext('2d');
+
+        // Carregar modelos do face-api.js
+        async function loadModels() {
+            const statusDiv = document.getElementById('status');
+            try {
+                statusDiv.innerText = '📥 Baixando modelos de detecção facial... (pode levar alguns segundos)';
+                
+                // URL alternativa dos modelos (hospedados no GitHub raw)
+                const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+                
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                
+                modelLoaded = true;
+                statusDiv.innerText = '✅ Modelos carregados com sucesso! Você já pode comparar imagens.';
+                statusDiv.style.color = 'green';
+            } catch (error) {
+                statusDiv.innerText = '❌ Erro ao carregar modelos. Verifique sua conexão com a internet.';
+                console.error(error);
+            }
+        }
+
+        // Extrair descritor facial de uma imagem (canvas)
+        async function getFaceDescriptor(canvas, ctx, imgElement, imageNumber) {
+            if (!modelLoaded) {
+                alert('Aguarde o carregamento dos modelos primeiro!');
+                return null;
+            }
+
+            // Desenhar imagem no canvas
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+
+            // Detectar rosto e obter descritor
+            const detections = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
+            
+            if (!detections) {
+                alert(`Nenhum rosto detectado na Imagem ${imageNumber}. Tente usar uma foto mais nítida com um rosto visível.`);
+                return null;
+            }
+
+            // Desenhar bounding box e landmarks no canvas
+            const detectionsForBox = await faceapi.detectAllFaces(canvas);
+            faceapi.draw.drawDetections(canvas, detectionsForBox);
+            faceapi.draw.drawFaceLandmarks(canvas, detections.landmarks);
+            
+            return detections.descriptor;
+        }
+
+        // Calcular distância euclidiana entre dois descritores
+        function euclideanDistance(desc1, desc2) {
+            let sum = 0;
+            for (let i = 0; i < desc1.length; i++) {
+                sum += Math.pow(desc1[i] - desc2[i], 2);
+            }
+            return Math.sqrt(sum);
+        }
+
+        // Verificar se é a mesma pessoa baseado na distância
+        function isSamePerson(desc1, desc2, threshold = 0.6) {
+            const distance = euclideanDistance(desc1, desc2);
+            console.log(`Distância entre descritores: ${distance}`);
+            return { isSame: distance < threshold, distance };
+        }
+
+        // Eventos de upload das imagens
+        document.getElementById('inputImg1').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const img = new Image();
+            img.onload = async () => {
+                img1FaceDescriptor = await getFaceDescriptor(img1Canvas, ctx1, img, 1);
+                if (img1FaceDescriptor) {
+                    document.getElementById('result').innerHTML = '✅ Face 1 detectada. Agora carregue a Face 2.';
+                }
+            };
+            img.src = URL.createObjectURL(file);
+        });
+
+        document.getElementById('inputImg2').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const img = new Image();
+            img.onload = async () => {
+                img2FaceDescriptor = await getFaceDescriptor(img2Canvas, ctx2, img, 2);
+                if (img2FaceDescriptor) {
+                    document.getElementById('result').innerHTML = '✅ Face 2 detectada. Clique em "Comparar Faces".';
+                }
+            };
+            img.src = URL.createObjectURL(file);
+        });
+
+        // Botão comparar
+        document.getElementById('compareBtn').addEventListener('click', () => {
+            if (!modelLoaded) {
+                alert('Modelos ainda estão carregando. Aguarde alguns segundos.');
+                return;
+            }
+            
+            if (!img1FaceDescriptor || !img2FaceDescriptor) {
+                alert('Por favor, carregue duas imagens com rostos detectados primeiro.');
+                return;
+            }
+            
+            const result = isSamePerson(img1FaceDescriptor, img2FaceDescriptor);
+            const resultDiv = document.getElementById('result');
+            
+            if (result.isSame) {
+                resultDiv.innerHTML = `✅ SÃO A MESMA PESSOA! (Distância: ${result.distance.toFixed(4)} / Limite: 0.60)`;
+                resultDiv.className = 'result similar';
+            } else {
+                resultDiv.innerHTML = `❌ NÃO SÃO A MESMA PESSOA. (Distância: ${result.distance.toFixed(4)} / Limite: 0.60)`;
+                resultDiv.className = 'result different';
+            }
+        });
+
+        // Iniciar carregamento dos modelos
+        loadModels();
+    </script>
+</body>
+</html>
