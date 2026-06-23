@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reações estilo Facebook com barrinha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .post {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .post-content {
+            padding: 16px;
+        }
+
+        .post-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .post-content p {
+            color: #4a4a4a;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .post-image {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            background: #e4e6eb;
+        }
+
+        .reaction-container {
+            padding: 8px 16px 16px;
+            border-top: 1px solid #e4e6eb;
+            position: relative;
+        }
+
+        /* ========== BOTÃO DE LIKE PRINCIPAL ========== */
+        .like-button-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+            position: relative;
+        }
+
+        .like-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #65676b;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .like-btn:hover {
+            background: #f0f2f5;
+        }
+
+        .like-btn.active {
+            color: #1877f2;
+        }
+
+        .like-btn.active-like {
+            color: #1877f2;
+        }
+
+        .like-btn.active-love {
+            color: #e74c3c;
+        }
+
+        .like-btn.active-haha {
+            color: #f39c12;
+        }
+
+        .like-btn.active-wow {
+            color: #8e44ad;
+        }
+
+        .like-btn.active-sad {
+            color: #3498db;
+        }
+
+        .like-btn.active-angry {
+            color: #e74c3c;
+        }
+
+        .like-icon {
+            font-size: 20px;
+        }
+
+        .like-text {
+            font-size: 14px;
+        }
+
+        /* ========== BARRINHA DE REAÇÕES ========== */
+        .reaction-picker {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            padding: 6px 4px;
+            display: none;
+            gap: 2px;
+            z-index: 1000;
+            animation: slideUp 0.2s ease;
+            border: 1px solid #e4e6eb;
+        }
+
+        .reaction-picker.show {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reaction-picker-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 30px;
+            font-size: 28px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .reaction-picker-btn:hover {
+            transform: scale(1.4);
+            background: #f0f2f5;
+        }
+
+        .reaction-picker-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ========== CONTADORES ========== */
+        .reactions-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0 4px;
+            border-top: 1px solid #f0f2f5;
+            margin-top: 8px;
+        }
+
+        .reactions-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #65676b;
+            font-size: 14px;
+        }
+
+        .reactions-left .emoji-stack {
+            display: flex;
+            align-items: center;
+        }
+
+        .reactions-left .emoji-stack span {
+            font-size: 16px;
+            margin-right: -4px;
+        }
+
+        .reactions-left .total-count {
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        .reaction-detail {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #65676b;
+            font-size: 13px;
+        }
+
+        .reaction-detail .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: default;
+        }
+
+        .reaction-detail .detail-item .emoji {
+            font-size: 14px;
+        }
+
+        .reaction-detail .detail-item .count {
+            font-weight: 500;
+        }
+
+        .reaction-detail .detail-item:not(:last-child)::after {
+            content: "·";
+            margin-left: 12px;
+            color: #ced0d4;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .reaction-picker-btn {
+                font-size: 24px;
+                min-width: 38px;
+                min-height: 38px;
+                padding: 4px 6px;
+            }
+
+            .reaction-detail {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .reaction-detail .detail-item:not(:last-child)::after {
+                display: none;
+            }
+
+            .reaction-picker {
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 4px 2px;
+            }
+
+            .reaction-picker.show {
+                display: flex;
+            }
+
+            .like-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Tooltip para desktop */
+        .reaction-picker-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="post">
+            <div class="post-content">
+                <h3>João Silva</h3>
+                <p>Acabei de voltar das férias! Que viagem incrível! 🌴</p>
+                <img src="https://via.placeholder.com/400x200" alt="Post image" class="post-image">
+            </div>
+            
+            <div class="reaction-container">
+                <!-- Botão de Like com barrinha -->
+                <div class="like-button-wrapper" id="likeWrapper">
+                    <button class="like-btn" id="likeBtn">
+                        <span class="like-icon" id="likeIcon">👍</span>
+                        <span class="like-text" id="likeText">Curtir</span>
+                    </button>
+                    
+                    <!-- Barrinha de reações -->
+                    <div class="reaction-picker" id="reactionPicker">
+                        <button class="reaction-picker-btn" data-reaction="like" title="Curtir">👍</button>
+                        <button class="reaction-picker-btn" data-reaction="love" title="Amei">❤️</button>
+                        <button class="reaction-picker-btn" data-reaction="haha" title="Haha">😂</button>
+                        <button class="reaction-picker-btn" data-reaction="wow" title="Uau">😮</button>
+                        <button class="reaction-picker-btn" data-reaction="sad" title="Triste">😢</button>
+                        <button class="reaction-picker-btn" data-reaction="angry" title="Raiva">😡</button>
+                    </div>
+                </div>
+
+                <!-- Resumo das reações -->
+                <div class="reactions-summary" id="reactionsSummary">
+                    <div class="reactions-left">
+                        <div class="emoji-stack" id="emojiStack">
+                            <!-- Será preenchido dinamicamente -->
+                        </div>
+                        <span class="total-count" id="totalReactions">0</span>
+                    </div>
+                    <div class="reaction-detail" id="reactionDetail">
+                        <!-- Será preenchido dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ReactionManager {
+            constructor() {
+                this.reactions = {
+                    like: { count: 0, emoji: '👍', label: 'Curtir', active: false },
+                    love: { count: 0, emoji: '❤️', label: 'Amei', active: false },
+                    haha: { count: 0, emoji: '😂', label: 'Haha', active: false },
+                    wow: { count: 0, emoji: '😮', label: 'Uau', active: false },
+                    sad: { count: 0, emoji: '😢', label: 'Triste', active: false },
+                    angry: { count: 0, emoji: '😡', label: 'Raiva', active: false }
+                };
+                
+                this.totalReactions = 0;
+                this.userReaction = null;
+                this.pickerTimeout = null;
+                
+                this.init();
+            }
+            
+            init() {
+                // Elementos
+                this.likeBtn = document.getElementById('likeBtn');
+                this.likeIcon = document.getElementById('likeIcon');
+                this.likeText = document.getElementById('likeText');
+                this.reactionPicker = document.getElementById('reactionPicker');
+                this.likeWrapper = document.getElementById('likeWrapper');
+                this.totalElement = document.getElementById('totalReactions');
+                this.emojiStack = document.getElementById('emojiStack');
+                this.reactionDetail = document.getElementById('reactionDetail');
+                
+                this.pickerButtons = document.querySelectorAll('.reaction-picker-btn');
+                
+                // Evento de hover para mostrar a barrinha
+                this.likeWrapper.addEventListener('mouseenter', () => this.showPicker());
+                this.likeWrapper.addEventListener('mouseleave', () => this.hidePicker());
+                
+                // Evento de clique nos emojis da barrinha
+                this.pickerButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const reactionType = btn.dataset.reaction;
+                        this.handleReaction(reactionType);
+                        this.hidePicker();
+                    });
+                });
+                
+                // Clique no botão de like principal
+                this.likeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.userReaction) {
+                        this.removeReaction(this.userReaction);
+                    } else {
+                        // Se não tem reação, adiciona like por padrão
+                        this.handleReaction('like');
+                    }
+                });
+            }
+            
+            showPicker() {
+                clearTimeout(this.pickerTimeout);
+                this.reactionPicker.classList.add('show');
+            }
+            
+            hidePicker() {
+                clearTimeout(this.pickerTimeout);
+                this.pickerTimeout = setTimeout(() => {
+                    this.reactionPicker.classList.remove('show');
+                }, 300);
+            }
+            
+            handleReaction(reactionType) {
+                // Se já tem essa reação, remove
+                if (this.userReaction === reactionType) {
+                    this.removeReaction(reactionType);
+                    return;
+                }
+                
+                // Se tem outra reação, remove primeiro
+                if (this.userReaction !== null) {
+                    this.removeReaction(this.userReaction);
+                }
+                
+                // Adiciona a nova
+                this.addReaction(reactionType);
+            }
+            
+            addReaction(reactionType) {
+                const reaction = this.reactions[reactionType];
+                reaction.count += 1;
+                reaction.active = true;
+                this.totalReactions += 1;
+                this.userReaction = reactionType;
+                
+                this.updateUI();
+                this.updateLikeButton(reactionType);
+            }
+            
+            removeReaction(reactionType) {
+                const reaction = this.reactions[reactionType];
+                reaction.count -= 1;
+                reaction.active = false;
+                this.totalReactions -= 1;
+                this.userReaction = null;
+                
+                this.updateUI();
+                this.updateLikeButton(null);
+            }
+            
+            updateLikeButton(reactionType) {
+                // Remove todas as classes
+                this.likeBtn.className = 'like-btn';
+                
+                if (reactionType) {
+                    const reaction = this.reactions[reactionType];
+                    this.likeIcon.textContent = reaction.emoji;
+                    this.likeText.textContent = reaction.label;
+                    this.likeBtn.classList.add('active', `active-${reactionType}`);
+                } else {
+                    this.likeIcon.textContent = '👍';
+                    this.likeText.textContent = 'Curtir';
+                }
+            }
+            
+            updateUI() {
+                // Atualiza total
+                this.totalElement.textContent = this.totalReactions;
+                
+                // Atualiza stack de emojis
+                this.updateEmojiStack();
+                
+                // Atualiza detalhes
+                this.updateReactionDetails();
+            }
+            
+            updateEmojiStack() {
+                const activeReactions = Object.entries(this.reactions)
+                    .filter(([_, data]) => data.count > 0)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .slice(0, 3);
+                
+                this.emojiStack.innerHTML = '';
+                activeReactions.forEach(([key, data]) => {
+                    const span = document.createElement('span');
+                    span.textContent = data.emoji;
+                    span.title = `${data.label}: ${data.count}`;
+                    this.emojiStack.appendChild(span);
+                });
+            }
+            
+            updateReactionDetails() {
+                const activeReactions = Object.entries(this.reactions)
+                    .filter(([_, data]) => data.count > 0)
+                    .sort((a, b) => b[1].count - a[1].count);
+                
+                this.reactionDetail.innerHTML = '';
+                activeReactions.forEach(([key, data]) => {
+                    const div = document.createElement('div');
+                    div.className = 'detail-item';
+                    div.innerHTML = `
+                        <span class="emoji">${data.emoji}</span>
+                        <span class="count">${data.count}</span>
+                    `;
+                    this.reactionDetail.appendChild(div);
+                });
+            }
+        }
+
+        // Inicializa quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            new ReactionManager();
+        });
+    </script>
+</body>
+</html>
