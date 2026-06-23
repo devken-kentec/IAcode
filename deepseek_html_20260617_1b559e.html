@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quadrado Controlado por Setas</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #1e1e2f;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      background-color: #2d2d44;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    canvas {
+      display: block;
+      background-color: #0f0f1a;
+      border-radius: 12px;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+      width: 600px;
+      height: 400px;
+      cursor: default;
+    }
+
+    .info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      color: #c0c0e0;
+      font-size: 0.95rem;
+      background: #1e1e32;
+      padding: 10px 18px;
+      border-radius: 40px;
+      border: 1px solid #4a4a6a;
+    }
+
+    .info kbd {
+      background: #3a3a5a;
+      color: #f0f0ff;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      border: 1px solid #6a6a8a;
+    }
+
+    .info span {
+      background: #2a2a44;
+      padding: 4px 14px;
+      border-radius: 30px;
+      border: 1px solid #4f4f77;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <div class="info">
+    <span>⬆ ⬇ ⬅ ➡</span>
+    <span><kbd>Setas</kbd> movem o quadrado</span>
+    <span id="positionDisplay">(300, 200)</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // --- Elementos do DOM ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const positionDisplay = document.getElementById('positionDisplay');
+
+    // --- Configurações do quadrado ---
+    const SQUARE_SIZE = 40;          // 40px x 40px
+    const MOVE_STEP = 8;            // pixels por tecla pressionada
+
+    // Estado inicial (centralizado)
+    let square = {
+      x: (canvas.width - SQUARE_SIZE) / 2,
+      y: (canvas.height - SQUARE_SIZE) / 2
+    };
+
+    // --- Controle de teclas pressionadas (movimento contínuo) ---
+    const keys = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false
+    };
+
+    // --- Função para desenhar o quadrado ---
+    function drawSquare() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gradiente sutil para o quadrado
+      const gradient = ctx.createRadialGradient(
+        square.x + 10, square.y + 10, 5,
+        square.x + 20, square.y + 20, 25
+      );
+      gradient.addColorStop(0, '#ff6b6b');
+      gradient.addColorStop(1, '#c0392b');
+
+      ctx.fillStyle = gradient;
+      ctx.shadowColor = '#ff6b6b';
+      ctx.shadowBlur = 20;
+
+      // Desenha o quadrado com bordas arredondadas (ligeiramente)
+      const radius = 6;
+      const x = square.x;
+      const y = square.y;
+      const w = SQUARE_SIZE;
+      const h = SQUARE_SIZE;
+
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Borda leve
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#ffb3b3';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Atualiza o display de posição
+      const centerX = Math.round(square.x + SQUARE_SIZE / 2);
+      const centerY = Math.round(square.y + SQUARE_SIZE / 2);
+      positionDisplay.textContent = `(${centerX}, ${centerY})`;
+    }
+
+    // --- Função de atualização de posição (movimento) ---
+    function updatePosition() {
+      let dx = 0, dy = 0;
+
+      if (keys.ArrowUp) dy -= MOVE_STEP;
+      if (keys.ArrowDown) dy += MOVE_STEP;
+      if (keys.ArrowLeft) dx -= MOVE_STEP;
+      if (keys.ArrowRight) dx += MOVE_STEP;
+
+      // Se não houve movimento, não faz nada
+      if (dx === 0 && dy === 0) return;
+
+      // Calcula nova posição
+      let newX = square.x + dx;
+      let newY = square.y + dy;
+
+      // --- Colisão com as bordas (limites) ---
+      // Limite esquerdo
+      if (newX < 0) newX = 0;
+      // Limite direito
+      if (newX + SQUARE_SIZE > canvas.width) newX = canvas.width - SQUARE_SIZE;
+      // Limite superior
+      if (newY < 0) newY = 0;
+      // Limite inferior
+      if (newY + SQUARE_SIZE > canvas.height) newY = canvas.height - SQUARE_SIZE;
+
+      // Atualiza apenas se houve alteração
+      if (newX !== square.x || newY !== square.y) {
+        square.x = newX;
+        square.y = newY;
+        drawSquare();  // redesenha com a nova posição
+      }
+    }
+
+    // --- Loop de animação (movimento contínuo enquanto tecla pressionada) ---
+    let animationFrame = null;
+
+    function gameLoop() {
+      updatePosition();
+      animationFrame = requestAnimationFrame(gameLoop);
+    }
+
+    // --- Event listeners para teclado ---
+    function handleKeyDown(e) {
+      const key = e.key;
+      // Só interessa se for uma das setas
+      if (key in keys) {
+        e.preventDefault();  // previne rolagem da página
+        if (!keys[key]) {
+          keys[key] = true;
+          // Se o loop não estiver rodando, inicia
+          if (!animationFrame) {
+            gameLoop();
+          }
+        }
+      }
+    }
+
+    function handleKeyUp(e) {
+      const key = e.key;
+      if (key in keys) {
+        e.preventDefault();
+        keys[key] = false;
+
+        // Se nenhuma tecla estiver pressionada, para o loop para economizar recursos
+        const anyKeyPressed = Object.values(keys).some(value => value === true);
+        if (!anyKeyPressed && animationFrame) {
+          cancelAnimationFrame(animationFrame);
+          animationFrame = null;
+        }
+      }
+    }
+
+    // --- Prevenir comportamento padrão das setas (scroll) e também PageUp/Down etc ---
+    window.addEventListener('keydown', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // --- Listeners principais ---
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    // --- Desenho inicial ---
+    drawSquare();
+
+    // --- (Opcional) Exibir uma mensagem no console para debug ---
+    console.log('🎮 Use as setas do teclado para mover o quadrado!');
+
+    // --- Limpeza (boa prática, mas não obrigatório para este exemplo) ---
+    window.addEventListener('beforeunload', function() {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    });
+
+  })();
+</script>
+</body>
+</html>

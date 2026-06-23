@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quadrado com Setas</title>
+</head>
+<body>
+    <canvas id="meuCanvas" width="500" height="300"></canvas>
+    <br>
+    <span>Use as setas ← → para mover</span>
+
+    <script>
+        const canvas = document.getElementById('meuCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let x = 230; // posição inicial do quadrado
+        const tamanho = 40;
+        const passo = 10;
+
+        function desenharQuadrado() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(x, 130, tamanho, tamanho);
+        }
+
+        document.addEventListener('keydown', function(evento) {
+            if (evento.key === 'ArrowLeft') {
+                x = x - passo;
+                if (x < 0) x = 0; // não sai da tela
+                desenharQuadrado();
+            }
+            else if (evento.key === 'ArrowRight') {
+                x = x + passo;
+                if (x + tamanho > canvas.width) x = canvas.width - tamanho;
+                desenharQuadrado();
+            }
+        });
+
+        desenharQuadrado(); // desenha pela primeira vez
+    </script>
+</body>
+</html>
