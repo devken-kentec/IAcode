@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconhecimento Facial em Arquivo Único</title>
+    
+    <!-- Carregando a biblioteca face-api.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 720px;
+            height: 560px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        video {
+            display: block;
+        }
+
+        /* O canvas de desenho deve ficar exatamente em cima do vídeo */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #status {
+            margin-top: 15px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Reconhecimento Facial (IA no Navegador)</h1>
+    <div class="video-container">
+        <video id="video" autoplay muted width="720" height="560"></video>
+    </div>
+    <div id="status">Carregando modelos de IA... Por favor, aguarde.</div>
+
+    <script>
+        const video = document.getElementById('video');
+        const statusText = document.getElementById('status');
+
+        // URL pública contendo os modelos pré-treinados para evitar downloads manuais
+        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+
+        // 1. Carrega os modelos da internet e depois inicia o vídeo
+        async function init() {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+                ]);
+                
+                statusText.innerText = "Modelos carregados! Ativando câmera...";
+                startVideo();
+            } catch (error) {
+                statusText.innerText = "Erro ao carregar modelos. Verifique a conexão.";
+                console.error(error);
+            }
+        }
+
+        // 2. Ativa a Webcam
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: {} })
+                .then(stream => {
+                    video.srcObject = stream;
+                    statusText.innerText = "Sistema Pronto!";
+                })
+                .catch(err => {
+                    statusText.innerText = "Erro ao acessar a webcam. Permita o acesso.";
+                    console.error(err);
+                });
+        }
+
+        // 3. Mapeia e desenha as detecções em tempo real
+        video.addEventListener('play', () => {
+            const canvas = faceapi.createCanvasFromMedia(video);
+            document.querySelector('.video-container').append(canvas);
+            
+            const displaySize = { width: video.width, height: video.height };
+            faceapi.matchDimensions(canvas, displaySize);
+
+            setInterval(async () => {
+                // Detecta rostos, expressões, idade e gênero
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceExpressions()
+                    .withAgeAndGender();
+                
+                // Redimensiona os traços para alinhar perfeitamente com o tamanho do vídeo
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                
+                // Limpa o desenho anterior para não acumular riscos na tela
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Desenha as caixas, pontos do rosto e expressões detectadas
+                faceapi.draw.drawDetections(canvas, resizedDetections);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+                faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+                
+                // Escreve a idade e o gênero estimados abaixo da caixa do rosto
+                resizedDetections.forEach(detection => {
+                    const { age, gender } = detection;
+                    let generoTraduzido = gender === 'male' ? 'Homem' : 'Mulher';
+                    
+                    new faceapi.draw.DrawTextField(
+                        [`${Math.round(age)} anos`, generoTraduzido],
+                        detection.detection.box.bottomLeft
+                    ).draw(canvas);
+                });
+            }, 100); // Executa a cada 100 milissegundos
+        });
+
+        // Inicializa o script
+        init();
+    </script>
+</body>
+</html>
