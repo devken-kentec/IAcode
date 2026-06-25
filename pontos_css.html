@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Efeitos com três pontinhos</title>
+  <style>
+    /* Reset e base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem 1rem;
+      color: white;
+    }
+
+    h1 {
+      font-weight: 400;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      margin-bottom: 2.5rem;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.75rem;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Cada card de efeito */
+    .effect-card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(4px);
+      border-radius: 2.5rem;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 160px;
+    }
+
+    .effect-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .effect-label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      margin-bottom: 1.5rem;
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* ------- ELEMENTO BASE: três pontinhos ------- */
+    .dots {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      line-height: 1;
+      color: #facc15;          /* amarelo vibrante */
+      text-shadow: 0 0 12px #facc1580, 0 4px 8px rgba(0,0,0,0.6);
+      position: relative;
+      width: 120px;
+      height: 80px;
+    }
+
+    /* Cada ponto individual */
+    .dot {
+      display: inline-block;
+      width: 0.9rem;
+      height: 0.9rem;
+      background: currentColor;
+      border-radius: 50%;
+      box-shadow: 0 0 12px currentColor;
+      transition: all 0.1s ease;
+      transform-origin: center;
+    }
+
+    /* Para efeitos que usam texto literal "…" podemos manter, 
+       mas usaremos spans para mais controle */
+
+    /* ---------- 1. SOBE E DESCE (bounce) ---------- */
+    .bounce-dots .dot {
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .bounce-dots .dot:nth-child(1) { animation-delay: 0s; }
+    .bounce-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+    .bounce-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-24px); }
+      60% { transform: translateY(-10px); }
+    }
+
+    /* ---------- 2. GIRAR EM CÍRCULO (orbit) ---------- */
+    .orbit-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .orbit-dots {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .orbit-dots .dot {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      top: 50%;
+      left: 50%;
+      margin-top: -0.5rem;
+      margin-left: -0.5rem;
+      animation: orbitRotate 3s infinite linear;
+    }
+
+    .orbit-dots .dot:nth-child(1) { animation-delay: 0s; }
+    .orbit-dots .dot:nth-child(2) { animation-delay: 0.6s; }
+    .orbit-dots .dot:nth-child(3) { animation-delay: 1.2s; }
+
+    @keyframes orbitRotate {
+      0% { transform: rotate(0deg) translateX(38px) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(38px) rotate(-360deg); }
+    }
+
+    /* ---------- 3. FORMAÇÃO DE TRIÂNGULO ---------- */
+    .triangle-dots {
+      position: relative;
+      width: 120px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .triangle-dots .dot {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      animation: trianglePulse 2.4s infinite ease-in-out;
+    }
+
+    /* vértices do triângulo equilátero */
+    .triangle-dots .dot:nth-child(1) {
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      animation-delay: 0s;
+    }
+    .triangle-dots .dot:nth-child(2) {
+      bottom: 10%;
+      left: 15%;
+      animation-delay: 0.8s;
+    }
+    .triangle-dots .dot:nth-child(3) {
+      bottom: 10%;
+      right: 15%;
+      animation-delay: 1.6s;
+    }
+
+    @keyframes trianglePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      40% { transform: scale(1.6); opacity: 0.7; }
+      70% { transform: scale(0.9); opacity: 1; }
+    }
+
+    /* ---------- 4. EFEITO EXTRA: ONDA (só para brilhar) ---------- */
+    .wave-dots .dot {
+      animation: wave 1.4s infinite ease-in-out;
+    }
+    .wave-dots .dot:nth-child(1) { animation-delay: 0s; }
+    .wave-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+    .wave-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes wave {
+      0%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-18px) scale(1.2); }
+      60% { transform: translateY(0) scale(0.9); }
+    }
+
+    /* ---------- 5. EFEITO PISCAR (clássico loading) ---------- */
+    .blink-dots .dot {
+      animation: blink 1.8s infinite;
+    }
+    .blink-dots .dot:nth-child(1) { animation-delay: 0s; }
+    .blink-dots .dot:nth-child(2) { animation-delay: 0.3s; }
+    .blink-dots .dot:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      40% { opacity: 0.1; transform: scale(0.5); }
+    }
+
+    /* ---------- 6. EFEITO "FLUTUA" (sobe e desce com suavidade) ---------- */
+    .float-dots .dot {
+      animation: float 2.2s infinite ease-in-out;
+    }
+    .float-dots .dot:nth-child(1) { animation-delay: 0s; }
+    .float-dots .dot:nth-child(2) { animation-delay: 0.4s; }
+    .float-dots .dot:nth-child(3) { animation-delay: 0.8s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.1); }
+    }
+
+    /* ---------- 7. EFEITO "ROTAÇÃO EM TRIÂNGULO" (gira os três num círculo) ---------- */
+    .triangle-orbit {
+      position: relative;
+      width: 110px;
+      height: 110px;
+    }
+    .triangle-orbit .dot {
+      position: absolute;
+      width: 1.1rem;
+      height: 1.1rem;
+      top: 50%;
+      left: 50%;
+      margin-top: -0.55rem;
+      margin-left: -0.55rem;
+      animation: triOrbit 3.6s infinite linear;
+    }
+    .triangle-orbit .dot:nth-child(1) { animation-delay: 0s; }
+    .triangle-orbit .dot:nth-child(2) { animation-delay: 1.2s; }
+    .triangle-orbit .dot:nth-child(3) { animation-delay: 2.4s; }
+
+    @keyframes triOrbit {
+      0% { transform: rotate(0deg) translateX(45px) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(45px) rotate(-360deg); }
+    }
+
+    /* ajustes para responsividade */
+    @media (max-width: 700px) {
+      .container { gap: 2rem; }
+      .effect-card { padding: 1.5rem 1rem; min-width: 140px; }
+      .dots { font-size: 2.4rem; width: 100px; height: 70px; }
+    }
+
+    /* cor diferente para cada card (apenas estético) */
+    .effect-card:nth-child(1) .dots { color: #facc15; } /* amarelo */
+    .effect-card:nth-child(2) .dots { color: #60a5fa; } /* azul */
+    .effect-card:nth-child(3) .dots { color: #a78bfa; } /* roxo */
+    .effect-card:nth-child(4) .dots { color: #34d399; } /* verde */
+    .effect-card:nth-child(5) .dots { color: #f472b6; } /* rosa */
+    .effect-card:nth-child(6) .dots { color: #fb923c; } /* laranja */
+    .effect-card:nth-child(7) .dots { color: #f87171; } /* vermelho */
+  </style>
+</head>
+<body>
+  <h1>⋯ efeitos com três pontinhos ⋯</h1>
+
+  <div class="container">
+    <!-- 1. SOBE E DESCE -->
+    <div class="effect-card">
+      <div class="effect-label">⬆⬇ sobe & desce</div>
+      <div class="dots bounce-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <!-- 2. GIRAR EM CÍRCULO (orbit) -->
+    <div class="effect-card">
+      <div class="effect-label">⟳ círculo</div>
+      <div class="orbit-wrapper">
+        <div class="orbit-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. FORMAÇÃO DE TRIÂNGULO (pulsando nos vértices) -->
+    <div class="effect-card">
+      <div class="effect-label">△ triângulo</div>
+      <div class="triangle-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <!-- 4. ONDA (bônus) -->
+    <div class="effect-card">
+      <div class="effect-label">〰 onda</div>
+      <div class="dots wave-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <!-- 5. PISCAR (loading) -->
+    <div class="effect-card">
+      <div class="effect-label">◉ piscar</div>
+      <div class="dots blink-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <!-- 6. FLUTUA (suave) -->
+    <div class="effect-card">
+      <div class="effect-label">⤵ flutua</div>
+      <div class="dots float-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <!-- 7. ROTAÇÃO TRIANGULAR (orbit em triângulo) -->
+    <div class="effect-card">
+      <div class="effect-label">△ giratório</div>
+      <div class="triangle-orbit">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
