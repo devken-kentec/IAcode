@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App em Tela Cheia</title>
+    <style>
+        /* Estilos básicos para dar um visual limpo */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .content {
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: white;
+            color: #764ba2;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .info {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Ocultar a mensagem de "clique" quando já estiver em tela cheia */
+        .fullscreen-hint {
+            display: block;
+        }
+
+        .fullscreen-active .fullscreen-hint {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🚀 Modo Tela Cheia</h1>
+        
+        <p>
+            Esta aplicação irá abrir automaticamente em tela cheia.<br>
+            A barra de endereços do navegador ficará oculta!
+        </p>
+
+        <button class="btn" id="fullscreenBtn">🔓 Abrir em Tela Cheia</button>
+
+        <div class="info">
+            <strong>Dica:</strong> Pressione <kbd>ESC</kbd> ou <kbd>F11</kbd> para sair do modo tela cheia.
+        </div>
+
+        <div class="status" id="status">Aguardando...</div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const statusElement = document.getElementById('status');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const body = document.body;
+
+            // Função para atualizar o status
+            function updateStatus(message, isFullscreen = false) {
+                statusElement.textContent = message;
+                if (isFullscreen) {
+                    body.classList.add('fullscreen-active');
+                } else {
+                    body.classList.remove('fullscreen-active');
+                }
+            }
+
+            // Função para entrar em tela cheia
+            function enterFullscreen() {
+                const elem = document.documentElement;
+
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen()
+                        .then(() => {
+                            updateStatus('✅ Em tela cheia!', true);
+                        })
+                        .catch((err) => {
+                            // Se o usuário negar ou ocorrer erro
+                            updateStatus('❌ Erro: ' + err.message);
+                            console.error('Erro ao entrar em tela cheia:', err);
+                        });
+                } else if (elem.webkitRequestFullscreen) { // Safari
+                    elem.webkitRequestFullscreen();
+                    updateStatus('✅ Em tela cheia (Safari)!', true);
+                } else if (elem.msRequestFullscreen) { // Internet Explorer/Edge antigo
+                    elem.msRequestFullscreen();
+                    updateStatus('✅ Em tela cheia (IE/Edge)!', true);
+                } else {
+                    updateStatus('❌ Seu navegador não suporta tela cheia.');
+                    alert('Seu navegador não suporta a API de tela cheia. Tente usar Chrome, Firefox, Edge ou Safari.');
+                }
+            }
+
+            // Função para sair da tela cheia
+            function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen()
+                        .then(() => {
+                            updateStatus('⏹️ Saindo da tela cheia...', false);
+                        })
+                        .catch((err) => {
+                            console.error('Erro ao sair da tela cheia:', err);
+                        });
+                } else if (document.webkitExitFullscreen) { // Safari
+                    document.webkitExitFullscreen();
+                    updateStatus('⏹️ Saindo da tela cheia (Safari)...', false);
+                } else if (document.msExitFullscreen) { // IE/Edge
+                    document.msExitFullscreen();
+                    updateStatus('⏹️ Saindo da tela cheia (IE/Edge)...', false);
+                }
+            }
+
+            // Alternar entre entrar e sair
+            function toggleFullscreen() {
+                if (document.fullscreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.msFullscreenElement) {
+                    // Se já estiver em tela cheia, sai
+                    exitFullscreen();
+                } else {
+                    // Se não estiver, entra
+                    enterFullscreen();
+                }
+            }
+
+            // ==========================================
+            // 1. TENTAR ABRIR AUTOMATICAMENTE AO CARREGAR
+            // ==========================================
+            // Isso só funciona se for disparado por um gesto do usuário.
+            // Alguns navegadores permitem se for no clique, então vamos tentar
+            // no carregamento, mas muitos vão bloquear.
+            window.addEventListener('load', function() {
+                updateStatus('🔄 Tentando abrir em tela cheia...');
+                
+                // Pequeno atraso para garantir que a página carregou completamente
+                setTimeout(() => {
+                    // Tenta entrar em tela cheia automaticamente
+                    // ATENÇÃO: Isso pode ser bloqueado por alguns navegadores
+                    // por não ser uma ação direta do usuário.
+                    enterFullscreen();
+                }, 300);
+            });
+
+            // ==========================================
+            // 2. BOTÃO PARA ABRIR/ALTERNAR (SEMPRE FUNCIONA)
+            // ==========================================
+            // Este botão SEMPRE funcionará porque é uma ação do usuário
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // ==========================================
+            // 3. DETECTAR MUDANÇAS NO ESTADO DA TELA CHEIA
+            // ==========================================
+            // Isso permite atualizar a interface quando o usuário
+            // pressiona ESC ou F11 manualmente
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+            function handleFullscreenChange() {
+                const isFullscreen = !!(document.fullscreenElement || 
+                                        document.webkitFullscreenElement || 
+                                        document.msFullscreenElement);
+                
+                if (isFullscreen) {
+                    updateStatus('✅ Em tela cheia!', true);
+                } else {
+                    updateStatus('⏹️ Modo tela cheia desativado', false);
+                }
+            }
+
+            // ==========================================
+            // 4. REDIRECIONAMENTO PARA TELA CHEIA NO CLICK EM QUALQUER LUGAR
+            // ==========================================
+            // Opcional: Se clicar em qualquer lugar da página, tenta ativar
+            // a tela cheia (caso o usuário tenha saído com ESC)
+            // Isso é útil para reativar facilmente.
+            document.addEventListener('click', function(e) {
+                // Ignora se clicou no botão (já tratado acima)
+                if (e.target === fullscreenBtn) return;
+                
+                // Se não estiver em tela cheia, tenta entrar
+                if (!document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+                    // Só entra se o usuário clicou (ação do usuário)
+                    enterFullscreen();
+                }
+            });
+
+            // Mensagem inicial no console
+            console.log('🚀 Aplicação em tela cheia!');
+            console.log('💡 Clique em qualquer lugar para ativar a tela cheia.');
+            console.log('💡 Pressione ESC para sair.');
+
+        })();
+    </script>
+</body>
+</html>
